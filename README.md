@@ -15,6 +15,11 @@ Finding choroids of the eye on a picture obtained by ophthalmoscopy.
 pip install matplotlib numpy
 ```
 
+# Data sets
+The main data set can be downloaded from [Friedrich-Alexander-Universität Erlangen-Nürnberg site](https://www5.cs.fau.de/research/data/fundus-images/).
+The program with a default configuration uses pictures from: [Download the whole dataset (~73 Mb)](https://www5.cs.fau.de/fileadmin/research/datasets/fundus-images/all.zip).
+Extract the archive and move folders `images`, `manual1`, and `mask` to `data` direcory.
+
 # How to run
 If used `Virtualenv` from TensorFlow instalation guide:
 

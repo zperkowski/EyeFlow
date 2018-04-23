@@ -249,3 +249,5 @@ $RECYCLE.BIN/
 
 
 # End of https://www.gitignore.io/api/git,macos,linux,python,windows,virtualenv,pycharm+all
+
+data/*
