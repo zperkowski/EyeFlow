@@ -12,4 +12,4 @@ sess = tf.Session()
 print(sess.run(hello))
 
 dataLoader = DataLoader.DataLoader()
-dataLoader.loadData()
+eyes = dataLoader.loadData()
