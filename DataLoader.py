@@ -31,7 +31,7 @@ class DataLoader:
             if (self.__isMissingFile(self._diabetic_ends_with)):
                 raise FileNotFoundError("Missing files")
 
-    def loadData(self):
+    def loadData(self, verbose):
         dict_of_eyes = {"h": [],  # healthy
                         "g": [],  # glaucomatous
                         "d": []}  # diabetic
@@ -39,7 +39,8 @@ class DataLoader:
         files_manual = os.listdir(self._manual_path)
         files_mask = os.listdir(self._mask_path)
         for i in range(0, len(files_raw)):
-            print("Loading: " + files_raw[i] + "\t" + files_manual[i] + "\t" + files_mask[i])
+            if (verbose):
+                print("Loading: " + files_raw[i] + "\t" + files_manual[i] + "\t" + files_mask[i])
             if (self._load_healthy
                     and files_raw[i].endswith(self._healthy_ends_with, 2, 4)
                     and files_manual[i].endswith(self._healthy_ends_with, 2, 4)
