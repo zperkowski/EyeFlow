@@ -1,5 +1,6 @@
 import os
 import Eye
+import matplotlib.image as mp_i
 
 
 class DataLoader:
@@ -45,19 +46,28 @@ class DataLoader:
                     and files_raw[i].endswith(self._healthy_ends_with, 2, 4)
                     and files_manual[i].endswith(self._healthy_ends_with, 2, 4)
                     and files_mask[i].endswith(self._healthy_ends_with, 2, 4)):
-                h_eye = Eye.Eye(files_raw[i], files_manual[i], files_mask[i])
+                img_raw = mp_i.imread(os.path.join(self._raw_path, files_raw[i]))
+                img_manual = mp_i.imread(os.path.join(self._manual_path, files_manual[i]))
+                img_mask = mp_i.imread(os.path.join(self._mask_path, files_mask[i]))
+                h_eye = Eye.Eye(img_raw, img_manual, img_mask)
                 dict_of_eyes.get("h").append(h_eye)
             if (self._load_glaucomatous
                     and files_raw[i].endswith(self._glaucomatous_ends_with, 2, 4)
                     and files_manual[i].endswith(self._glaucomatous_ends_with, 2, 4)
                     and files_mask[i].endswith(self._glaucomatous_ends_with, 2, 4)):
-                g_eye = Eye.Eye(files_raw[i], files_manual[i], files_mask[i])
+                img_raw = mp_i.imread(os.path.join(self._raw_path, files_raw[i]))
+                img_manual = mp_i.imread(os.path.join(self._manual_path, files_manual[i]))
+                img_mask = mp_i.imread(os.path.join(self._mask_path, files_mask[i]))
+                g_eye = Eye.Eye(img_raw, img_manual, img_mask)
                 dict_of_eyes.get("g").append(g_eye)
             if (self._load_diabetic
                     and files_raw[i].endswith(self._diabetic_ends_with, 2, 5)
                     and files_manual[i].endswith(self._diabetic_ends_with, 2, 5)
                     and files_mask[i].endswith(self._diabetic_ends_with, 2, 5)):
-                d_eye = Eye.Eye(files_raw[i], files_manual[i], files_mask[i])
+                img_raw = mp_i.imread(os.path.join(self._raw_path, files_raw[i]))
+                img_manual = mp_i.imread(os.path.join(self._manual_path, files_manual[i]))
+                img_mask = mp_i.imread(os.path.join(self._mask_path, files_mask[i]))
+                d_eye = Eye.Eye(img_raw, img_manual, img_mask)
                 dict_of_eyes.get("d").append(d_eye)
 
         print("Loaded " + str(len(dict_of_eyes.get("h"))) + " healthy images")

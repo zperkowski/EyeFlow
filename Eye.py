@@ -9,3 +9,12 @@ class Eye:
         self.__raw = raw
         self.__manual = manual
         self.__mask = mask
+
+    def getRaw(self):
+        return self.__raw
+
+    def getManual(self):
+        return self.__manual
+
+    def getMask(self):
+        return self.__mask
