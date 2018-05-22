@@ -36,8 +36,9 @@ class Eye:
         for x in range(w):
             for y in range(h):
                 if (self.getMask()[x][y][0] == self.getMask()[x][y][1] == self.getMask()[x][y][2] == 255):
-                    total_pixels += 1
-                    difference += abs((self.getManual()[x][y] / 255) - (self.getCalculated()[x][y] / 255))
+                    if (self.getManual()[x][y] != self.getCalculated()[x][y]):
+                        total_pixels += 1
+                        difference += abs((self.getManual()[x][y] / 255) - (self.getCalculated()[x][y] / 255))
 
         difference /= total_pixels
         return difference
