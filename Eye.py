@@ -1,22 +1,28 @@
-import matplotlib.image as mp_i
+from skimage import color
 import numpy as np
 
 class Eye:
     """This class contains all data about one eye: raw picture, correct result, and mask."""
 
     __raw = None
+    __rawGrey = None
     __manual = None
     __mask = None
     __calculated = None
+    patchSize = 5
+    offset = int(patchSize / 2)
+    x = 0 + offset
+    y = 0 + offset
 
     def __init__(self, raw, manual, mask):
         self.__raw = raw
         self.__manual = manual
         self.__mask = mask
         self.__calculated = np.zeros(self.__manual.shape)
+        self.__rawGrey = color.rgb2gray(self.__raw)
 
     def getRaw(self):
-        return self.__raw
+        return self.__rawGrey
 
     def getManual(self):
         return self.__manual
@@ -42,3 +48,40 @@ class Eye:
 
         difference /= total_pixels
         return difference
+
+    def numOfSamples(self):
+        numOfSamples = (self.getRaw().shape[0] - self.offset * 2) * (self.getRaw().shape[1] - self.offset * 2)
+        return numOfSamples
+
+    def getNextBatch(self, batchSize):
+        batch = ([], [])
+        for i in range(batchSize):
+            pathRaw = self.getRaw()[self.x - self.offset: self.x + self.offset + 1, self.y - self.offset: self.y + self.offset + 1]
+            if (self.getManual()[self.x][self.y] == 255):
+                found = [0, 1]
+            else:
+                found = [1, 0]
+            batch[0].append(np.asarray(pathRaw).flatten())
+            batch[1].append(found)
+            self.x += 1
+            if (self.getRaw().shape[0] - self.offset < self.x):
+                self.x = 0 + self.offset
+                self.y += 1
+            if (self.getRaw().shape[1] - self.offset < self.y):
+                self.x = 0 + self.offset
+                self.y = 0 + self.offset
+        return batch
+
+
+
+
+
+
+
+
+
+
+
+
+
+
