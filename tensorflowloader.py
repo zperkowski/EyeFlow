@@ -45,23 +45,25 @@ def runTensorFlow(eyes, verbose):
     init = tf.global_variables_initializer()
     with tf.Session() as session:
         session.run(init)
-        # TODO: Find why it crashes
         # Training cycle
         for epoch in range(training_epochs):
             avg_cost = 0.
             total_batch = int(eye.numOfSamples() / batch_size)
             # Loop over all batches
-            tmp = 0
+            progress = prevProgress = "0.00%"
             for i in range(total_batch):
+                progress = "{:.2f}".format(i / total_batch) + "%"
+                if (progress != prevProgress):
+                    print('\r' + str(epoch + 1) + " epoch:\t" + progress, end='', flush=True)
+                    prevProgress = progress
                 batch_xs, batch_ys = eye.getNextBatch(batch_size)
-                tmp += len(batch_xs)
                 # Fit training using batch data
                 session.run(optimizer, feed_dict={x: batch_xs, y: batch_ys})
                 # Compute average loss
                 avg_cost += session.run(cost, feed_dict={x: batch_xs, y: batch_ys}) / total_batch
             # Display logs per epoch step
             if epoch % display_step == 0:
-                print("Epoch:", '%04d' % (epoch + 1), "cost=", "{:.9f}".format(avg_cost))
+                print("\nEpoch:", '%04d' % (epoch + 1), "cost=", "{:.9f}".format(avg_cost))
             avg_set.append(avg_cost)
             epoch_set.append(epoch + 1)
         print("Training phase finished")
