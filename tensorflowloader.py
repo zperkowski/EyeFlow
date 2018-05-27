@@ -13,7 +13,7 @@ def runTensorFlow(eyes, verbose):
 
     # Parameters
     learning_rate = 0.01
-    training_epochs = 25
+    training_epochs = 2
     batch_size = 100
     display_step = 1
 
@@ -52,7 +52,7 @@ def runTensorFlow(eyes, verbose):
             # Loop over all batches
             progress = prevProgress = "0.00%"
             for i in range(total_batch):
-                progress = "{:.2f}".format(i / total_batch) + "%"
+                progress = "{:.2f}".format(i / total_batch * 100) + "%"
                 if (progress != prevProgress):
                     print('\r' + str(epoch + 1) + " epoch:\t" + progress, end='', flush=True)
                     prevProgress = progress
@@ -78,7 +78,7 @@ def runTensorFlow(eyes, verbose):
         correct_prediction = tf.equal(tf.argmax(activation, 1), tf.argmax(y, 1))
         # Calculate accuracy
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-        print("Model accuracy:", accuracy.eval({x: eye.getNextBatch()[0], y: eye.getNextBatch()[1]}))
+        print("Model accuracy:", accuracy.eval({x: eye.getNextBatch(batch_size, True)[0], y: eye.getNextBatch(batch_size, True)[1]}))
 
         if (verbose):
             tf.summary.FileWriter("/tmp/tensorflowlogs", session.graph)
