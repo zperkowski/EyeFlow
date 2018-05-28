@@ -3,13 +3,13 @@ import argparse
 def parseArgs():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-sl", "--startLearning", action='store', default=-1,
+    parser.add_argument("-sl", "--startLearning", action='store', default=1,
                         dest='startLearning', help='at which image will start learning', type=int)
-    parser.add_argument("-el", "--endLearning", action='store', default=-1,
+    parser.add_argument("-el", "--endLearning", action='store', default=1,
                         dest='endLearning', help='at which image will stop learning', type=int)
-    parser.add_argument("-sp", "--startProcessing", action='store', default=-1,
+    parser.add_argument("-sp", "--startProcessing", action='store', default=2,
                         dest='startProcessing', help='at which image will start processing', type=int)
-    parser.add_argument("-ep", "--endProcessing", action='store', default=-1,
+    parser.add_argument("-ep", "--endProcessing", action='store', default=2,
                         dest='endProcessing', help='at which image will stop processing', type=int)
     parser.add_argument("-y", "--healthy", action='store_true', default=True,
                         dest='healthy', help='analysing healthy images')

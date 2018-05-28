@@ -1,20 +1,19 @@
 import tensorflow as tf
-import numpy as np
-import matplotlib.image as mp_i
 import matplotlib.pyplot as plt
 
 
-def runTensorFlow(eyes, verbose):
-    if(verbose):
-        printInfoAboutImages(eyes)
-
-    # Choose a picture
-    eye = eyes.get('h')[0]
+def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
+    if (verbose):
+        print("Training data:", end='')
+        printInfoAboutImages(eyesToTrain)
+        print("\nProcess data:", end='')
+        printInfoAboutImages(eyesToCalculate)
 
     # Parameters
     learning_rate = 0.01
     training_epochs = 2
     batch_size = 100
+    accuracy_batch_size = batch_size
     display_step = 1
 
     # tf Graph Input
@@ -46,39 +45,51 @@ def runTensorFlow(eyes, verbose):
     with tf.Session() as session:
         session.run(init)
         # Training cycle
-        for epoch in range(training_epochs):
-            avg_cost = 0.
-            total_batch = int(eye.numOfSamples() / batch_size)
-            # Loop over all batches
-            progress = prevProgress = "0.00%"
-            for i in range(total_batch):
-                progress = "{:.2f}".format(i / total_batch * 100) + "%"
-                if (progress != prevProgress):
-                    print('\r' + str(epoch + 1) + " epoch:\t" + progress, end='', flush=True)
-                    prevProgress = progress
-                batch_xs, batch_ys = eye.getNextBatch(batch_size)
-                # Fit training using batch data
-                session.run(optimizer, feed_dict={x: batch_xs, y: batch_ys})
-                # Compute average loss
-                avg_cost += session.run(cost, feed_dict={x: batch_xs, y: batch_ys}) / total_batch
-            # Display logs per epoch step
-            if epoch % display_step == 0:
-                print("\nEpoch:", '%04d' % (epoch + 1), "cost=", "{:.9f}".format(avg_cost))
-            avg_set.append(avg_cost)
-            epoch_set.append(epoch + 1)
-        print("Training phase finished")
+        # TODO: Process other than only healthy
+        for i_eye in range(len(eyesToTrain.get('h'))):
+            print("\nTraining on " + str(i_eye + 1) + " image")
+            eye = eyesToTrain.get('h')[i_eye]
+            for epoch in range(training_epochs):
+                avg_cost = 0.
+                total_batch = int(eye.numOfSamples() / batch_size)
+                # Loop over all batches
+                prevProgress = "0.00%"
+                for i in range(total_batch):
+                    progress = "{:.2f}".format(i / total_batch * 100) + "%"
+                    if (progress != prevProgress):
+                        print('\r' + "Epoch:", '%04d' % (epoch + 1) + "\t\t" + progress, end='', flush=True)
+                        prevProgress = progress
+                    batch_xs, batch_ys = eye.getNextBatch(batch_size)
+                    # Fit training using batch data
+                    session.run(optimizer, feed_dict={x: batch_xs, y: batch_ys})
+                    # Compute average loss
+                    avg_cost += session.run(cost, feed_dict={x: batch_xs, y: batch_ys}) / total_batch
+                # Display logs per epoch step
+                if epoch % display_step == 0:
+                    print("\rEpoch: " + '%04d' % (epoch + 1) + "\t\t100.00%" + "\t\tcost = " + "{:.9f}".format(avg_cost), flush=True)
+                avg_set.append(avg_cost)
+                epoch_set.append(epoch + 1)
+            print("Training phase finished for " + str(i_eye + 1) + " eye")
 
-        plt.plot(epoch_set, avg_set, 'o', label='Logistic Regression Training phase')
-        plt.ylabel('cost')
-        plt.xlabel('epoch')
-        plt.legend()
-        plt.show()
+            plt.plot(epoch_set, avg_set, 'o', label='Logistic Regression Training phase - ' + str(i_eye + 1) + ' eye')
+            plt.ylabel('cost')
+            plt.xlabel('epoch')
+            plt.legend()
+            plt.show()
 
-        # Test model
-        correct_prediction = tf.equal(tf.argmax(activation, 1), tf.argmax(y, 1))
-        # Calculate accuracy
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-        print("Model accuracy:", accuracy.eval({x: eye.getNextBatch(batch_size, True)[0], y: eye.getNextBatch(batch_size, True)[1]}))
+            avg_set = ()
+            epoch_set = ()
+
+            # Test model
+            correct_prediction = tf.equal(tf.argmax(activation, 1), tf.argmax(y, 1))
+            # Calculate accuracy
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+            print("Model accuracy " + str(i_eye + 1) + " eye: \t",
+                  accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0], y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
+
+        # TODO: Calculate picture
+        for i in range(len(eyesToCalculate)):
+            print("Calculating " + str(i) + "eye")
 
         if (verbose):
             tf.summary.FileWriter("/tmp/tensorflowlogs", session.graph)
@@ -93,7 +104,7 @@ def printInfoAboutImages(eyes):
         print("\nShape of healthy images:")
         print("\t\tRaw:\t\t\t\t\tManual:\t\t\t\t\tMask:")
         for i in range(0, len(eyes_h)):
-            print(i, end="\t\t")
+            print(str(i+1), end="\t\t")
             print(eyes_h[i].getRaw().shape, end="\t\t\t")
             print(eyes_h[i].getManual().shape, end="\t\t\t")
             print(eyes_h[i].getMask().shape, end="\n")
@@ -101,7 +112,7 @@ def printInfoAboutImages(eyes):
         print("\nShape of glaucomatous images:")
         print("\t\tRaw:\t\t\t\t\tManual:\t\t\t\t\tMask:")
         for i in range(0, len(eyes_g)):
-            print(i, end="\t\t")
+            print(str(i+1), end="\t\t")
             print(eyes_g[i].getRaw().shape, end="\t\t\t")
             print(eyes_g[i].getManual().shape, end="\t\t\t")
             print(eyes_g[i].getMask().shape, end="\n")
@@ -109,7 +120,7 @@ def printInfoAboutImages(eyes):
         print("\nShape of diabetic images:")
         print("\t\tRaw:\t\t\t\t\tManual:\t\t\t\t\tMask:")
         for i in range(0, len(eyes_d)):
-            print(i, end="\t\t")
+            print(str(i+1), end="\t\t")
             print(eyes_d[i].getRaw().shape, end="\t\t\t")
             print(eyes_d[i].getManual().shape, end="\t\t\t")
             print(eyes_d[i].getMask().shape, end="\n")

@@ -10,7 +10,14 @@ import DataLoader, ui
 if __name__ == '__main__':
     args = ui.parseArgs()
 
-    dataLoader = DataLoader.DataLoader(args.healthy, args.glaucomatous, args.diabetic)
-    eyes = dataLoader.loadData(verbose=args.verbose)
+    dataLoader = DataLoader.DataLoader(
+        args.healthy,
+        args.glaucomatous,
+        args.diabetic,
+        args.startLearning,
+        args.endLearning,
+        args.startProcessing,
+        args.endProcessing)
+    eyesToTrain, eyesToCalculate = dataLoader.loadData(verbose=args.verbose)
 
-    tfl.runTensorFlow(eyes, verbose=args.verbose)
+    tfl.runTensorFlow(eyesToTrain, eyesToCalculate, verbose=args.verbose)

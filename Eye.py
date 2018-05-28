@@ -57,6 +57,12 @@ class Eye:
     def getNextBatch(self, batchSize, random=False):
         batch = (np.empty([batchSize, 25]), np.empty([batchSize, 2]))
         for i in range(batchSize):
+            if (random):
+                self.x = randint(int(0.0 + self.getCalculated().shape[0] * 0.15),
+                                 int(self.getCalculated().shape[0]
+                                 - self.getCalculated().shape[0] * 0.15))
+                self.y = randint(0, self.getCalculated().shape[1])
+
             pathRaw = self.getRaw()[self.x - self.offset: self.x + self.offset + 1, self.y - self.offset: self.y + self.offset + 1]
             if (self.getManual()[self.x][self.y] == 255):
                 found = [0, 1]
@@ -65,11 +71,6 @@ class Eye:
             batch[0][i] = np.asarray(pathRaw).flatten()
             batch[1][i] = found
             self.x += 1
-            if (random):
-                self.x = randint(int(0.0 + self.getCalculated().shape[0] * 0.15),
-                                 int(self.getCalculated().shape[0]
-                                 - self.getCalculated().shape[0] * 0.15))
-                self.y = randint(0, self.getCalculated().shape[1])
             if (self.getRaw().shape[0] - self.offset - 1 < self.x):
                 self.x = 0 + self.offset
                 self.y += 1
@@ -77,17 +78,3 @@ class Eye:
                 self.x = 0 + self.offset
                 self.y = 0 + self.offset
         return batch
-
-
-
-
-
-
-
-
-
-
-
-
-
-
