@@ -77,8 +77,8 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
             plt.legend()
             plt.show()
 
-            avg_set = ()
-            epoch_set = ()
+            avg_set = []
+            epoch_set = []
 
             # Test model
             correct_prediction = tf.equal(tf.argmax(activation, 1), tf.argmax(y, 1))
