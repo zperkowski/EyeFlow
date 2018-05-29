@@ -58,10 +58,10 @@ class Eye:
         batch = (np.empty([batchSize, 25]), np.empty([batchSize, 2]))
         for i in range(batchSize):
             if (random):
-                self.x = randint(int(0.0 + self.getCalculated().shape[0] * 0.15),
-                                 int(self.getCalculated().shape[0]
-                                 - self.getCalculated().shape[0] * 0.15))
-                self.y = randint(0, self.getCalculated().shape[1])
+                self.x = randint(int(self.getCalculated().shape[0] * 0.15),
+                                 int(self.getCalculated().shape[0] * 0.75))
+                self.y = randint(int(self.getCalculated().shape[1] * 0.15),
+                                 int(self.getCalculated().shape[1] * 0.75))
 
             pathRaw = self.getRaw()[self.x - self.offset: self.x + self.offset + 1, self.y - self.offset: self.y + self.offset + 1]
             if (self.getManual()[self.x][self.y] == 255):

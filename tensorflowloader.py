@@ -37,16 +37,15 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
 
     optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
 
-    # Plot settings
-    avg_set = []
-    epoch_set = []
-
     init = tf.global_variables_initializer()
     with tf.Session() as session:
         session.run(init)
         # Training cycle
         # TODO: Process other than only healthy
         for i_eye in range(len(eyesToTrain.get('h'))):
+            # Plot settings
+            avg_set = []
+            epoch_set = []
             print("\nTraining on " + str(i_eye + 1) + " image")
             eye = eyesToTrain.get('h')[i_eye]
             for epoch in range(training_epochs):
@@ -77,9 +76,6 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
             plt.legend()
             plt.show()
 
-            avg_set = []
-            epoch_set = []
-
             # Test model
             correct_prediction = tf.equal(tf.argmax(activation, 1), tf.argmax(y, 1))
             # Calculate accuracy
@@ -88,8 +84,15 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
                   accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0], y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
 
         # TODO: Calculate picture
-        for i in range(len(eyesToCalculate)):
-            print("Calculating " + str(i) + "eye")
+        for i_eye in range(len(eyesToCalculate.get('h'))):
+            print("\nCalculating " + str(i_eye) + " eye")
+            eye = eyesToCalculate.get('h')[i_eye]
+            # Test model
+            correct_prediction = tf.equal(tf.argmax(activation, 1), tf.argmax(y, 1))
+            # Calculate accuracy
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+            print("Model accuracy " + str(i_eye + 1) + " eye: \t",
+                  accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0], y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
 
         if (verbose):
             tf.summary.FileWriter("/tmp/tensorflowlogs", session.graph)
