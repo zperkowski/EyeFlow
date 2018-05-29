@@ -12,7 +12,7 @@ Finding choroids of the eye on a picture obtained by ophthalmoscopy.
 [TensorFlow](https://www.tensorflow.org/install/)
 
 ```
-pip install matplotlib numpy
+pip install matplotlib numpy scikit-image scipy
 ```
 
 # Data sets
