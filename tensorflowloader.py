@@ -1,5 +1,7 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import tempfile
+import os
 
 
 def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
@@ -11,9 +13,9 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
 
     # Parameters
     learning_rate = 0.01
-    training_epochs = 2
-    batch_size = 100
-    accuracy_batch_size = batch_size
+    training_epochs = 5
+    batch_size = 1000
+    accuracy_batch_size = batch_size * 10
     display_step = 1
 
     # tf Graph Input
@@ -65,7 +67,9 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
                     avg_cost += session.run(cost, feed_dict={x: batch_xs, y: batch_ys}) / total_batch
                 # Display logs per epoch step
                 if epoch % display_step == 0:
-                    print("\rEpoch: " + '%04d' % (epoch + 1) + "\t\t100.00%" + "\t\tcost = " + "{:.9f}".format(avg_cost), flush=True)
+                    print(
+                        "\rEpoch: " + '%04d' % (epoch + 1) + "\t\t100.00%" + "\t\tcost = " + "{:.9f}".format(avg_cost),
+                        flush=True)
                 avg_set.append(avg_cost)
                 epoch_set.append(epoch + 1)
             print("Training phase finished for " + str(i_eye + 1) + " eye")
@@ -81,7 +85,8 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
             # Calculate accuracy
             accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
             print("Model accuracy " + str(i_eye + 1) + " eye: \t",
-                  accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0], y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
+                  accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0],
+                                 y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
 
         # TODO: Calculate picture
         for i_eye in range(len(eyesToCalculate.get('h'))):
@@ -92,11 +97,13 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
             # Calculate accuracy
             accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
             print("Model accuracy " + str(i_eye + 1) + " eye: \t",
-                  accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0], y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
+                  accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0],
+                                 y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
 
         if (verbose):
-            tf.summary.FileWriter("/tmp/tensorflowlogs", session.graph)
-            print("\nTo use TensorBoard run:\n$tensorboard", "--logdir=/tmp/tensorflowlogs\n")
+            path = os.path.join(tempfile.gettempdir(), "tensorflowlogs")
+            tf.summary.FileWriter(path, session.graph)
+            print("\nTo use TensorBoard run:\n$tensorboard", "--logdir=" + path + "\n")
 
 
 def printInfoAboutImages(eyes):
@@ -107,7 +114,7 @@ def printInfoAboutImages(eyes):
         print("\nShape of healthy images:")
         print("\t\tRaw:\t\t\t\t\tManual:\t\t\t\t\tMask:")
         for i in range(0, len(eyes_h)):
-            print(str(i+1), end="\t\t")
+            print(str(i + 1), end="\t\t")
             print(eyes_h[i].getRaw().shape, end="\t\t\t")
             print(eyes_h[i].getManual().shape, end="\t\t\t")
             print(eyes_h[i].getMask().shape, end="\n")
@@ -115,7 +122,7 @@ def printInfoAboutImages(eyes):
         print("\nShape of glaucomatous images:")
         print("\t\tRaw:\t\t\t\t\tManual:\t\t\t\t\tMask:")
         for i in range(0, len(eyes_g)):
-            print(str(i+1), end="\t\t")
+            print(str(i + 1), end="\t\t")
             print(eyes_g[i].getRaw().shape, end="\t\t\t")
             print(eyes_g[i].getManual().shape, end="\t\t\t")
             print(eyes_g[i].getMask().shape, end="\n")
@@ -123,7 +130,7 @@ def printInfoAboutImages(eyes):
         print("\nShape of diabetic images:")
         print("\t\tRaw:\t\t\t\t\tManual:\t\t\t\t\tMask:")
         for i in range(0, len(eyes_d)):
-            print(str(i+1), end="\t\t")
+            print(str(i + 1), end="\t\t")
             print(eyes_d[i].getRaw().shape, end="\t\t\t")
             print(eyes_d[i].getManual().shape, end="\t\t\t")
             print(eyes_d[i].getMask().shape, end="\n")
