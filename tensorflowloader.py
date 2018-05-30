@@ -13,7 +13,7 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
 
     # Parameters
     learning_rate = 0.01
-    training_epochs = 5
+    training_epochs = 1
     batch_size = 1000
     accuracy_batch_size = batch_size * 10
     display_step = 1
@@ -84,21 +84,32 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
             correct_prediction = tf.equal(tf.argmax(activation, 1), tf.argmax(y, 1))
             # Calculate accuracy
             accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-            print("Model accuracy " + str(i_eye + 1) + " eye: \t",
+            print("Model accuracy (training) " + str(i_eye + 1) + " eye: \t",
                   accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0],
                                  y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
 
-        # TODO: Calculate picture
         for i_eye in range(len(eyesToCalculate.get('h'))):
-            print("\nCalculating " + str(i_eye) + " eye")
             eye = eyesToCalculate.get('h')[i_eye]
             # Test model
             correct_prediction = tf.equal(tf.argmax(activation, 1), tf.argmax(y, 1))
             # Calculate accuracy
             accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-            print("Model accuracy " + str(i_eye + 1) + " eye: \t",
+            print("\nModel accuracy (processing) " + str(i_eye + 1) + " eye: \t",
                   accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0],
                                  y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
+
+            total_batch = int(eye.numOfSamples() / batch_size)
+            classification = []
+            prevProgress = "0.00%"
+            for i in range(total_batch):
+                feed_dict = {x: eye.getNextBatch(batch_size)[0]}
+                classification.extend(session.run(activation, feed_dict))
+                progress = "{:.2f}".format(i / total_batch * 100) + "%"
+                if (progress != prevProgress):
+                    print('\r' + "Calculating " + str(i_eye + 1) + " eye:\t\t" + progress, end='', flush=True)
+                    prevProgress = progress
+            print('\r' + "Calculated " + str(i_eye + 1) + " eye:\t\t100.00%", flush=True)
+            eye.buildImage(classification)
 
         if (verbose):
             path = os.path.join(tempfile.gettempdir(), "tensorflowlogs")

@@ -54,6 +54,8 @@ class Eye:
         numOfSamples = (self.getRaw().shape[0] - self.offset * 2) * (self.getRaw().shape[1] - self.offset * 2)
         return numOfSamples
 
+    """Returns a patch and true value of detected vein.
+    If detected(white) [0, 1]. If not(black) [1, 0]."""
     def getNextBatch(self, batchSize, random=False):
         batch = (np.empty([batchSize, 25]), np.empty([batchSize, 2]))
         for i in range(batchSize):
@@ -78,3 +80,16 @@ class Eye:
                 self.x = 0 + self.offset
                 self.y = 0 + self.offset
         return batch
+
+    def buildImage(self, classification):
+        flat_calculated = np.zeros(len(classification))
+        for i in range(flat_calculated.shape[0]):
+            # Adds only white on the black background
+            if (classification[i][1] >= 0.5):
+                flat_calculated[i] = 1.0
+
+        # Need to extend the list to the proper length - width * height
+        # When the batch size is bigger than 1 it can cut the last part of the image
+        missing = self.getCalculated().shape[0] * self.getCalculated().shape[1] - flat_calculated.shape[0]
+        flat_calculated = np.pad(flat_calculated, (0, missing), 'constant')
+        self.__calculated = flat_calculated.reshape(self.getCalculated().shape)
