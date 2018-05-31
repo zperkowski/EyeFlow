@@ -13,7 +13,7 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
 
     # Parameters
     learning_rate = 0.01
-    training_epochs = 1
+    training_epochs = 5
     batch_size = 1000
     accuracy_batch_size = batch_size * 10
     display_step = 1
@@ -102,14 +102,20 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
             classification = []
             prevProgress = "0.00%"
             for i in range(total_batch):
-                feed_dict = {x: eye.getNextBatch(batch_size)[0]}
-                classification.extend(session.run(activation, feed_dict))
+                # feed_dict = {x: eye.getNextBatch(batch_size)[0]}
+                # classification.extend(session.run(activation, feed_dict))
                 progress = "{:.2f}".format(i / total_batch * 100) + "%"
                 if (progress != prevProgress):
-                    print('\r' + "Calculating " + str(i_eye + 1) + " eye:\t\t" + progress, end='', flush=True)
+                    print('\r' + "Calculating " + str(i_eye + 1)
+                          + " eye:\t\t\t\t\t\t\t\t" + progress, end='', flush=True)
                     prevProgress = progress
-            print('\r' + "Calculated " + str(i_eye + 1) + " eye:\t\t100.00%", flush=True)
+            print('\r' + "Calculated " + str(i_eye + 1)
+                  + " eye:\t\t\t\t\t\t\t\t100.00%", flush=True)
+            print("Building an image based on predictions...")
             eye.buildImage(classification)
+
+            print("Difference between manual and predicted:\t\t"
+                  + "{:.2f}".format(eye.compare() * 100) + "%")
 
         if (verbose):
             path = os.path.join(tempfile.gettempdir(), "tensorflowlogs")
