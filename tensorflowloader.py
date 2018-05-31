@@ -51,6 +51,8 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             epoch_set = []
             print("\nTraining on " + str(i_eye + 1) + " image")
             eye = eyesToTrain.get('h')[i_eye]
+            eye.plotRaw(extraStr=str(i_eye + 1) + " traning")
+            eye.plotManual(extraStr=str(i_eye + 1) + " traning")
             for epoch in range(training_epochs):
                 avg_cost = 0.
                 total_batch = int(eye.numOfSamples() / batch_size)
@@ -91,6 +93,8 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
 
         for i_eye in range(len(eyesToCalculate.get('h'))):
             eye = eyesToCalculate.get('h')[i_eye]
+            eye.plotRaw(extraStr=str(i_eye + 1) + " processing")
+            eye.plotManual(extraStr=str(i_eye + 1) + " processing")
             # Test model
             correct_prediction = tf.equal(tf.argmax(activation, 1), tf.argmax(y, 1))
             # Calculate accuracy
@@ -108,12 +112,13 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
                 progress = "{:.2f}".format(i / total_batch * 100) + "%"
                 if (progress != prevProgress):
                     print('\r' + "Calculating " + str(i_eye + 1)
-                          + " eye:\t\t\t\t\t\t\t\t" + progress, end='', flush=True)
+                          + " eye:\t\t\t\t\t\t\t" + progress, end='', flush=True)
                     prevProgress = progress
             print('\r' + "Calculated " + str(i_eye + 1)
-                  + " eye:\t\t\t\t\t\t\t\t100.00%", flush=True)
+                  + " eye:\t\t\t\t\t\t\t100.00%", flush=True)
             print("Building an image based on predictions...")
             eye.buildImage(classification)
+            eye.plotCalculated()
 
             print("Difference between manual and predicted:\t\t"
                   + "{:.2f}".format(eye.compare() * 100) + "%")

@@ -1,6 +1,9 @@
 from skimage import color
 import numpy as np
 from random import randint
+from matplotlib import pyplot as plt
+import matplotlib.image as mpimg
+
 
 class Eye:
     """This class contains all data about one eye: raw picture, correct result, and mask."""
@@ -86,10 +89,26 @@ class Eye:
         for i in range(flat_calculated.shape[0]):
             # Adds only white on the black background
             if (classification[i][1] >= 0.5):
-                flat_calculated[i] = 1.0
+                flat_calculated[i] = 255
 
+        # first pixels are ignored depending on patch size
+        offset = self.getCalculated().shape[0] * int(self.patchSize / 2)
         # Need to extend the list to the proper length - width * height
         # When the batch size is bigger than 1 it can cut the last part of the image
-        missing = self.getCalculated().shape[0] * self.getCalculated().shape[1] - flat_calculated.shape[0]
-        flat_calculated = np.pad(flat_calculated, (0, missing), 'constant')
+        missing = self.getCalculated().shape[0] * self.getCalculated().shape[1] - flat_calculated.shape[0] - offset
+        flat_calculated = np.pad(flat_calculated, (offset, missing), 'constant', constant_values=(0, 0))
         self.__calculated = flat_calculated.reshape(self.getCalculated().shape)
+
+    def plotRaw(self, extraStr=''):
+        self.plotImage(self.getRaw(), 'Raw ' + str(extraStr))
+
+    def plotManual(self, extraStr=''):
+        self.plotImage(self.getManual(), "Manual " + str(extraStr))
+
+    def plotCalculated(self, extraStr=''):
+        self.plotImage(self.getCalculated(), "Calculated " + str(extraStr))
+
+    def plotImage(self, image, title=''):
+        plt.imshow(image, cmap='gray')
+        plt.title(title)
+        plt.show()
