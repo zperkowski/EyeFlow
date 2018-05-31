@@ -102,8 +102,8 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
             classification = []
             prevProgress = "0.00%"
             for i in range(total_batch):
-                # feed_dict = {x: eye.getNextBatch(batch_size)[0]}
-                # classification.extend(session.run(activation, feed_dict))
+                feed_dict = {x: eye.getNextBatch(batch_size)[0]}
+                classification.extend(session.run(activation, feed_dict))
                 progress = "{:.2f}".format(i / total_batch * 100) + "%"
                 if (progress != prevProgress):
                     print('\r' + "Calculating " + str(i_eye + 1)
