@@ -11,6 +11,12 @@ def parseArgs():
                         dest='startProcessing', help='at which image will start processing', type=int)
     parser.add_argument("-ep", "--endProcessing", action='store', default=2,
                         dest='endProcessing', help='at which image will stop processing', type=int)
+    parser.add_argument("-b", "--batch", action='store', default=1000,
+                        dest='batch', help='size of a batch', type=int)
+    parser.add_argument("-e", "--epochs", action='store', default=5,
+                        dest='epochs', help='number of epochs', type=int)
+    parser.add_argument("-lr", "--learningRate", action='store', default=0.01,
+                        dest='learningRate', help='learning rate', type=float)
     parser.add_argument("-y", "--healthy", action='store_true', default=True,
                         dest='healthy', help='analysing healthy images')
     parser.add_argument("-g", "--glaucomatous", action='store_true', default=False,

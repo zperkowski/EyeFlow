@@ -20,4 +20,10 @@ if __name__ == '__main__':
         args.endProcessing)
     eyesToTrain, eyesToCalculate = dataLoader.loadData(verbose=args.verbose)
 
-    tfl.runTensorFlow(eyesToTrain, eyesToCalculate, verbose=args.verbose)
+    tfl.runTensorFlow(
+        eyesToTrain,
+        eyesToCalculate,
+        batch_size=args.batch,
+        learning_rate=args.learningRate,
+        training_epochs=args.epochs,
+        verbose=args.verbose)

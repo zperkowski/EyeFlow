@@ -4,19 +4,20 @@ import tempfile
 import os
 
 
-def runTensorFlow(eyesToTrain, eyesToCalculate, verbose):
+def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, training_epochs, verbose):
     if (verbose):
         print("Training data:", end='')
         printInfoAboutImages(eyesToTrain)
         print("\nProcess data:", end='')
         printInfoAboutImages(eyesToCalculate)
 
-    # Parameters
-    learning_rate = 0.01
-    training_epochs = 5
-    batch_size = 1000
+    # Parameters (with batch_size, learning_rate and training_epochs)
     accuracy_batch_size = batch_size * 10
     display_step = 1
+    print("\nMachine learning paramteres")
+    print("Batch size:\t\t\t" + str(batch_size))
+    print("Learning rate:\t\t" + str(learning_rate))
+    print("Traning epochs:\t\t" + str(training_epochs))
 
     # tf Graph Input
     # image of 5x5 pixels = 25
