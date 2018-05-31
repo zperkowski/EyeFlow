@@ -17,7 +17,8 @@ if __name__ == '__main__':
         args.startLearning,
         args.endLearning,
         args.startProcessing,
-        args.endProcessing)
+        args.endProcessing,
+        args.patchSize)
     eyesToTrain, eyesToCalculate = dataLoader.loadData(verbose=args.verbose)
 
     tfl.runTensorFlow(
@@ -26,4 +27,5 @@ if __name__ == '__main__':
         batch_size=args.batch,
         learning_rate=args.learningRate,
         training_epochs=args.epochs,
+        patch_size=args.patchSize,
         verbose=args.verbose)

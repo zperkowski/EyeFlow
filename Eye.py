@@ -2,7 +2,6 @@ from skimage import color
 import numpy as np
 from random import randint
 from matplotlib import pyplot as plt
-import matplotlib.image as mpimg
 
 
 class Eye:
@@ -14,16 +13,19 @@ class Eye:
     __mask = None
     __calculated = None
     patchSize = 5
-    offset = int(patchSize / 2)
-    x = 0 + offset
-    y = 0 + offset
+    offset = int()
+    x = int()
+    y = int()
 
-    def __init__(self, raw, manual, mask):
+    def __init__(self, raw, manual, mask, patchSize):
         self.__raw = raw
         self.__manual = manual
         self.__mask = mask
         self.__calculated = np.zeros(self.__manual.shape)
         self.__rawGrey = color.rgb2gray(self.__raw)
+        self.patchSize = patchSize
+        self.offset = int(patchSize / 2)
+        self.x = self.y = 0 + self.offset
 
     def getRaw(self):
         return self.__rawGrey
@@ -60,7 +62,7 @@ class Eye:
     """Returns a patch and true value of detected vein.
     If detected(white) [0, 1]. If not(black) [1, 0]."""
     def getNextBatch(self, batchSize, random=False):
-        batch = (np.empty([batchSize, 25]), np.empty([batchSize, 2]))
+        batch = (np.empty([batchSize, self.patchSize * self.patchSize]), np.empty([batchSize, 2]))
         for i in range(batchSize):
             if (random):
                 self.x = randint(int(self.getCalculated().shape[0] * 0.15),
@@ -91,8 +93,8 @@ class Eye:
             if (classification[i][1] >= 0.5):
                 flat_calculated[i] = 255
 
-        # first pixels are ignored depending on patch size
-        offset = self.getCalculated().shape[0] * int(self.patchSize / 2)
+        # first lines of pixels are ignored depending on patch size
+        offset = self.getCalculated().shape[0] * self.offset
         # Need to extend the list to the proper length - width * height
         # When the batch size is bigger than 1 it can cut the last part of the image
         missing = self.getCalculated().shape[0] * self.getCalculated().shape[1] - flat_calculated.shape[0] - offset

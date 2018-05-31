@@ -20,6 +20,7 @@ class DataLoader:
     files_raw = []
     files_manual = []
     files_mask = []
+    patchSize = int()
 
     _startLearning = int()
     _endLearning = int()
@@ -27,7 +28,8 @@ class DataLoader:
     _endProcessing = int()
 
     def __init__(self, healthy=True, glaucomatous=False, diabetic=False,
-                 startLearning=1, endLearning=1, startProcessing=2, endProcessing=2):
+                 startLearning=1, endLearning=1, startProcessing=2, endProcessing=2,
+                 patchSize=15):
         self._load_healthy = healthy
         self._load_glaucomatous = glaucomatous
         self._load_diabetic = diabetic
@@ -35,6 +37,7 @@ class DataLoader:
         self._endLearning = endLearning-1
         self._startProcessing = startProcessing-1
         self._endProcessing = endProcessing-1
+        self.patchSize = patchSize
 
         if (healthy):
             if (self.__isMissingFile(self._healthy_ends_with)):
@@ -125,7 +128,7 @@ class DataLoader:
             img_raw = mp_i.imread(os.path.join(self._raw_path, self.files_raw[number]))
             img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))
             img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))
-            h_eye = Eye.Eye(img_raw, img_manual, img_mask)
+            h_eye = Eye.Eye(img_raw, img_manual, img_mask, self.patchSize)
             return h_eye
         else:
             return None
@@ -137,7 +140,7 @@ class DataLoader:
             img_raw = mp_i.imread(os.path.join(self._raw_path, self.files_raw[number]))
             img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))
             img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))
-            g_eye = Eye.Eye(img_raw, img_manual, img_mask)
+            g_eye = Eye.Eye(img_raw, img_manual, img_mask, self.patchSize)
             return g_eye
         else:
             return None
@@ -149,7 +152,7 @@ class DataLoader:
             img_raw = mp_i.imread(os.path.join(self._raw_path, self.files_raw[number]))
             img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))
             img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))
-            d_eye = Eye.Eye(img_raw, img_manual, img_mask)
+            d_eye = Eye.Eye(img_raw, img_manual, img_mask, self.patchSize)
             return d_eye
         else:
             return None
