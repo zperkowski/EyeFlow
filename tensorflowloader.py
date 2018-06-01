@@ -119,7 +119,22 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
                   + " eye:\t\t\t\t\t\t\t100.00%", flush=True)
             print("Building an image based on predictions...")
             eye.buildImage(classification)
-            eye.plotCalculated()
+            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.5")
+
+            eye.buildImage(classification, 0.6)
+            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.6")
+
+            eye.buildImage(classification, 0.7)
+            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.7")
+
+            eye.buildImage(classification, 0.8)
+            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.8")
+
+            eye.buildImage(classification, 0.9)
+            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.9")
+
+            eye.buildImage(classification, 0.95)
+            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.95")
 
             print("Difference between manual and predicted:\t\t"
                   + "{:.2f}".format(eye.compare() * 100) + "%")

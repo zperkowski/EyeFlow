@@ -86,11 +86,11 @@ class Eye:
                 self.y = 0 + self.offset
         return batch
 
-    def buildImage(self, classification):
+    def buildImage(self, classification, threshold=0.5):
         flat_calculated = np.zeros(len(classification))
         for i in range(flat_calculated.shape[0]):
             # Adds only white on the black background
-            if (classification[i][1] >= 0.5):
+            if (classification[i][1] >= threshold):
                 flat_calculated[i] = 255
 
         # first lines of pixels are ignored depending on patch size
