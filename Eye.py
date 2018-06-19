@@ -28,7 +28,7 @@ class Eye:
         self.x = self.y = 0 + self.offset
 
     def getRaw(self):
-        return self.__rawGrey
+        return self.__raw
 
     def getManual(self):
         return self.__manual
@@ -61,29 +61,29 @@ class Eye:
 
     """Returns a patch and true value of detected vein.
     If detected(white) [0, 1]. If not(black) [1, 0]."""
-    def getNextBatch(self, batchSize, random=False):
-        batch = (np.empty([batchSize, self.patchSize * self.patchSize]), np.empty([batchSize, 2]))
-        for i in range(batchSize):
-            if (random):
-                self.x = randint(int(self.getCalculated().shape[0] * 0.15),
-                                 int(self.getCalculated().shape[0] * 0.75))
-                self.y = randint(int(self.getCalculated().shape[1] * 0.15),
-                                 int(self.getCalculated().shape[1] * 0.75))
+    def getNextPatch(self, random=False):
+        batch = [np.empty([self.patchSize, self.patchSize, 3]),
+                 np.empty([self.patchSize, self.patchSize])]
+        if (random):
+            self.x = randint(int(self.getCalculated().shape[0] * 0.15),
+                             int(self.getCalculated().shape[0] * 0.75))
+            self.y = randint(int(self.getCalculated().shape[1] * 0.15),
+                             int(self.getCalculated().shape[1] * 0.75))
 
-            pathRaw = self.getRaw()[self.x - self.offset: self.x + self.offset + 1, self.y - self.offset: self.y + self.offset + 1]
-            if (self.getManual()[self.x][self.y] == 255):
-                found = [0, 1]
-            else:
-                found = [1, 0]
-            batch[0][i] = np.asarray(pathRaw).flatten()
-            batch[1][i] = found
-            self.x += 1
-            if (self.getRaw().shape[0] - self.offset - 1 < self.x):
-                self.x = 0 + self.offset
-                self.y += 1
-            if (self.getRaw().shape[1] - self.offset - 1 < self.y):
-                self.x = 0 + self.offset
-                self.y = 0 + self.offset
+        patchRaw = self.getRaw()[self.x - self.offset: self.x + self.offset + 1,
+                   self.y - self.offset: self.y + self.offset + 1, :]
+        patchManual = self.getManual()[self.x - self.offset: self.x + self.offset + 1,
+                      self.y - self.offset: self.y + self.offset + 1]
+
+        batch[0] = patchRaw
+        batch[1] = patchManual
+        self.x += 1
+        if (self.getRaw().shape[0] - self.offset - 1 < self.x):
+            self.x = 0 + self.offset
+            self.y += 1
+        if (self.getRaw().shape[1] - self.offset - 1 < self.y):
+            self.x = 0 + self.offset
+            self.y = 0 + self.offset
         return batch
 
     def buildImage(self, classification, threshold=0.5):

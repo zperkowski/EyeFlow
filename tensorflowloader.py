@@ -12,34 +12,27 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
         printInfoAboutImages(eyesToCalculate)
 
     # Parameters (with batch_size, learning_rate and training_epochs)
-    accuracy_batch_size = batch_size * 10
     display_step = 1
-    patch_area = patch_size * patch_size
     print("\nMachine learning paramteres")
-    print("Batch size:\t\t\t" + str(batch_size))
     print("Learning rate:\t\t" + str(learning_rate))
     print("Traning epochs:\t\t" + str(training_epochs))
 
     # tf Graph Input
-    # image of patchSize^2 pixels
-    x = tf.placeholder("float", [None, patch_area])
+    x = tf.placeholder(tf.float32, [1, patch_size, patch_size, 3])
     # 2 possibilities to place 2 colors on the center pixel
-    y = tf.placeholder("float", [None, 2])
+    y = tf.placeholder(tf.float32, [1, patch_size, patch_size])
 
-    # Create model
-
-    # Set model weights
-    W = tf.Variable(tf.zeros([patch_area, 2]))
-    b = tf.Variable(tf.zeros([2]))
+    scores = tf.layers.conv2d(x, 1, [patch_size, patch_size], padding='same', activation=None)
+    y_pred = tf.sigmoid(scores)
 
     # Construct model
-    activation = tf.nn.softmax(tf.matmul(x, W) + b)  # Softmax
+    loss = tf.nn.sigmoid_cross_entropy_with_logits(
+        labels=tf.reshape(y, [-1]),
+        logits=tf.reshape(scores, [-1]))
 
     # Minimize error using cross entropy
-    cross_entropy = y * tf.log(activation)
-    cost = tf.reduce_mean(-tf.reduce_sum(cross_entropy, reduction_indices=1))
-
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
+    optim = tf.train.AdamOptimizer(1e-2)
+    step = optim.minimize(loss)
 
     init = tf.global_variables_initializer()
     with tf.Session() as session:
@@ -56,24 +49,24 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             eye.plotManual(extraStr=str(i_eye + 1) + " traning")
             for epoch in range(training_epochs):
                 avg_cost = 0.
-                total_batch = int(eye.numOfSamples() / batch_size)
-                # Loop over all batches
+                samples = eye.numOfSamples()
+                # Loop over all patches
                 prevProgress = "0.00%"
-                for i in range(total_batch):
-                    progress = "{:.2f}".format(i / total_batch * 100) + "%"
+                for i in range(samples):
+                    progress = "{:.2f}".format(i / samples * 100) + "%"
                     if (progress != prevProgress):
                         print('\r' + "Epoch:", '%04d' % (epoch + 1) + "\t\t" + progress, end='', flush=True)
                         prevProgress = progress
-                    batch_xs, batch_ys = eye.getNextBatch(batch_size)
+                    batch_xs, batch_ys = eye.getNextPatch()
                     # Fit training using batch data
-                    session.run(optimizer, feed_dict={x: batch_xs, y: batch_ys})
+                    session.run(step, feed_dict={x: batch_xs[None, :, :, :], y: batch_ys[None, :, :]})
                     # Compute average loss
-                    avg_cost += session.run(cost, feed_dict={x: batch_xs, y: batch_ys}) / total_batch
+                    avg_cost += session.run(loss, feed_dict={x: batch_xs[None, :, :, :], y: batch_ys[None, :, :]}) / samples
                 # Display logs per epoch step
-                if epoch % display_step == 0:
-                    print(
-                        "\rEpoch: " + '%04d' % (epoch + 1) + "\t\t100.00%" + "\t\tcost = " + "{:.9f}".format(avg_cost),
-                        flush=True)
+                # if epoch % display_step == 0:
+                #     print(
+                #         "\rEpoch: " + '%04d' % (epoch + 1) + "\t\t100.00%" + "\t\tcost = " + "{:.9f}".format(avg_cost),
+                #         flush=True)
                 avg_set.append(avg_cost)
                 epoch_set.append(epoch + 1)
             print("Training phase finished for " + str(i_eye + 1) + " eye")
@@ -85,32 +78,32 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             plt.show()
 
             # Test model
-            correct_prediction = tf.equal(tf.argmax(activation, 1), tf.argmax(y, 1))
+            # correct_prediction = tf.equal(tf.argmax(step, 1), tf.argmax(y, 1))
             # Calculate accuracy
-            accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-            print("Model accuracy (training) " + str(i_eye + 1) + " eye: \t",
-                  accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0],
-                                 y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
+            # accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+            # print("Model accuracy (training) " + str(i_eye + 1) + " eye: \t",
+            #       accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0],
+            #                      y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
 
         for i_eye in range(len(eyesToCalculate.get('h'))):
             eye = eyesToCalculate.get('h')[i_eye]
             eye.plotRaw(extraStr=str(i_eye + 1) + " processing")
             eye.plotManual(extraStr=str(i_eye + 1) + " processing")
             # Test model
-            correct_prediction = tf.equal(tf.argmax(activation, 1), tf.argmax(y, 1))
-            # Calculate accuracy
-            accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-            print("\nModel accuracy (processing) " + str(i_eye + 1) + " eye: \t",
-                  accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0],
-                                 y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
+            # correct_prediction = tf.equal(tf.argmax(step, 1), tf.argmax(y, 1))
+            # # Calculate accuracy
+            # accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+            # # print("\nModel accuracy (processing) " + str(i_eye + 1) + " eye: \t",
+            # #       accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0],
+            # #                      y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
 
-            total_batch = int(eye.numOfSamples() / batch_size)
             classification = []
             prevProgress = "0.00%"
-            for i in range(total_batch):
-                feed_dict = {x: eye.getNextBatch(batch_size)[0]}
-                classification.extend(session.run(activation, feed_dict))
-                progress = "{:.2f}".format(i / total_batch * 100) + "%"
+            samples = eye.numOfSamples()
+            for i in range(samples):
+                feed_dict = {x: eye.getNextPatch()[0][None, :, :, :]}
+                classification.extend(session.run(y_pred, feed_dict))
+                progress = "{:.2f}".format(i / samples * 100) + "%"
                 if (progress != prevProgress):
                     print('\r' + "Calculating " + str(i_eye + 1)
                           + " eye:\t\t\t\t\t\t\t" + progress, end='', flush=True)
@@ -118,26 +111,16 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             print('\r' + "Calculated " + str(i_eye + 1)
                   + " eye:\t\t\t\t\t\t\t100.00%", flush=True)
             print("Building an image based on predictions...")
-            eye.buildImage(classification)
-            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.5")
 
-            eye.buildImage(classification, 0.6)
-            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.6")
+            plt.imshow(classification[0][:, :, 0], cmap="gray")
+            plt.show()
 
-            eye.buildImage(classification, 0.7)
-            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.7")
-
-            eye.buildImage(classification, 0.8)
-            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.8")
-
-            eye.buildImage(classification, 0.9)
-            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.9")
-
-            eye.buildImage(classification, 0.95)
-            eye.plotCalculated(extraStr=str(i_eye + 1) + " processing 0.95")
-
-            print("Difference between manual and predicted:\t\t"
-                  + "{:.2f}".format(eye.compare() * 100) + "%")
+            for threshold in range(5, 10):
+                threshold *= 0.1
+                eye.buildImage(classification[0], threshold)
+                eye.plotCalculated(extraStr=str(i_eye + 1) + " processing " + str(threshold))
+                print("Difference between manual and predicted " + str(threshold) + ":\t\t"
+                      + "{:.2f}".format(eye.compare() * 100) + "%")
 
         if (verbose):
             path = os.path.join(tempfile.gettempdir(), "tensorflowlogs")
