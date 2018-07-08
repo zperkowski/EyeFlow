@@ -2,6 +2,7 @@ from skimage import color
 import numpy as np
 from random import randint
 from matplotlib import pyplot as plt
+import cv2
 
 
 class Eye:
@@ -18,9 +19,9 @@ class Eye:
     y = int()
 
     def __init__(self, raw, manual, mask, patchSize):
-        self.__raw = raw
-        self.__manual = manual
-        self.__mask = mask
+        self.__raw = cv2.resize(raw, dsize=(int(raw.shape[1]*0.5), int(raw.shape[0]*0.5)), interpolation=cv2.INTER_CUBIC)
+        self.__manual = cv2.resize(manual, dsize=(int(manual.shape[1]*0.5), int(manual.shape[0]*0.5)), interpolation=cv2.INTER_CUBIC)
+        self.__mask = cv2.resize(mask, dsize=(int(mask.shape[1]*0.5), int(mask.shape[0]*0.5)), interpolation=cv2.INTER_CUBIC)
         self.__calculated = np.zeros(self.__manual.shape)
         self.__rawGrey = color.rgb2gray(self.__raw)
         self.patchSize = patchSize
@@ -52,54 +53,20 @@ class Eye:
                         total_pixels += 1
                         difference += abs((self.getManual()[x][y] / 255) - (self.getCalculated()[x][y] / 255))
 
-        difference /= total_pixels
+        if (total_pixels > 0):
+            difference /= total_pixels
+        else:
+            difference = 0.0
         return difference
 
-    def numOfSamples(self):
-        numOfSamples = (self.getRaw().shape[0] - self.offset * 2) * (self.getRaw().shape[1] - self.offset * 2)
-        return numOfSamples
-
-    """Returns a patch and true value of detected vein.
-    If detected(white) [0, 1]. If not(black) [1, 0]."""
-    def getNextPatch(self, random=False):
-        batch = [np.empty([self.patchSize, self.patchSize, 3]),
-                 np.empty([self.patchSize, self.patchSize])]
-        if (random):
-            self.x = randint(int(self.getCalculated().shape[0] * 0.15),
-                             int(self.getCalculated().shape[0] * 0.75))
-            self.y = randint(int(self.getCalculated().shape[1] * 0.15),
-                             int(self.getCalculated().shape[1] * 0.75))
-
-        patchRaw = self.getRaw()[self.x - self.offset: self.x + self.offset + 1,
-                   self.y - self.offset: self.y + self.offset + 1, :]
-        patchManual = self.getManual()[self.x - self.offset: self.x + self.offset + 1,
-                      self.y - self.offset: self.y + self.offset + 1]
-
-        batch[0] = patchRaw
-        batch[1] = patchManual
-        self.x += 1
-        if (self.getRaw().shape[0] - self.offset - 1 < self.x):
-            self.x = 0 + self.offset
-            self.y += 1
-        if (self.getRaw().shape[1] - self.offset - 1 < self.y):
-            self.x = 0 + self.offset
-            self.y = 0 + self.offset
-        return batch
-
     def buildImage(self, classification, threshold=0.5):
-        flat_calculated = np.zeros(len(classification))
-        for i in range(flat_calculated.shape[0]):
-            # Adds only white on the black background
-            if (classification[i][1] >= threshold):
-                flat_calculated[i] = 255
+        flat_calculated = np.zeros(classification.shape[1:3])
+        for y in range(classification.shape[1]):
+            for x in range(classification.shape[2]):
+                if (classification[0, y, x, 0] > np.max(classification) * threshold):
+                    flat_calculated[y, x] = 255
 
-        # first lines of pixels are ignored depending on patch size
-        offset = self.getCalculated().shape[0] * self.offset
-        # Need to extend the list to the proper length - width * height
-        # When the batch size is bigger than 1 it can cut the last part of the image
-        missing = self.getCalculated().shape[0] * self.getCalculated().shape[1] - flat_calculated.shape[0] - offset
-        flat_calculated = np.pad(flat_calculated, (offset, missing), 'constant', constant_values=(0, 0))
-        self.__calculated = flat_calculated.reshape(self.getCalculated().shape)
+        self.__calculated = flat_calculated
 
     def plotRaw(self, extraStr=''):
         self.plotImage(self.getRaw(), 'Raw ' + str(extraStr))
