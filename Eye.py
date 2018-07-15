@@ -60,11 +60,12 @@ class Eye:
         return difference
 
     def buildImage(self, classification, threshold=0.5):
-        flat_calculated = np.zeros(classification.shape[1:3])
-        for y in range(classification.shape[1]):
-            for x in range(classification.shape[2]):
-                if (classification[0, y, x, 0] > np.max(classification) * threshold):
-                    flat_calculated[y, x] = 255
+        flat_calculated = np.zeros(classification.shape)
+        t = np.max(classification) * threshold
+        for y in range(int(classification.shape[1])):
+            for x in range(int(classification.shape[0])):
+                if (classification[x, y] > t):
+                    flat_calculated[x, y] = 255
 
         self.__calculated = flat_calculated
 
