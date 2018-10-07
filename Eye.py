@@ -1,7 +1,6 @@
-from skimage import color
 import numpy as np
-from random import randint
 from matplotlib import pyplot as plt
+from skimage import color
 
 
 class Eye:
@@ -40,7 +39,7 @@ class Eye:
         batches = []
         for y in range(0, picture.shape[1] - self.patchSize):
             for x in range(0, picture.shape[0] - self.patchSize):
-                sub_picture = picture[y:y+self.patchSize, x:x+self.patchSize]
+                sub_picture = picture[y:y + self.patchSize, x:x + self.patchSize]
                 batches.append(sub_picture)
         return batches
 
@@ -49,6 +48,14 @@ class Eye:
 
     def get_batches_of_manual(self):
         return self._get_batches(self.get_manual())
+
+    def build_image_from_batches(self, batches):
+        picture = self.get_calculated()
+        next_batch = 0
+        for y in range(0, picture.shape[1] - self.patchSize):
+            for x in range(0, picture.shape[0] - self.patchSize):
+                picture[y:y + self.patchSize, x:x + self.patchSize] = batches[next_batch]
+                next_batch += 1
 
     def compare(self):
         w = self.get_calculated().shape[0]
@@ -63,7 +70,7 @@ class Eye:
                         total_pixels += 1
                         difference += abs((self.get_manual()[x][y] / 255) - (self.get_calculated()[x][y] / 255))
 
-        if (total_pixels > 0):
+        if total_pixels > 0:
             difference /= total_pixels
         else:
             difference = 0.0
@@ -88,7 +95,8 @@ class Eye:
     def plot_calculated(self, extraStr=''):
         self.plot_image(self.get_calculated(), "Calculated " + str(extraStr))
 
-    def plot_image(self, image, title=''):
+    @staticmethod
+    def plot_image(image, title=''):
         plt.imshow(image, cmap='gray')
         plt.title(title)
         plt.show()
