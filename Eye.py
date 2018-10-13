@@ -37,8 +37,8 @@ class Eye:
 
     def _get_batches(self, picture):
         batches = []
-        for y in range(0, picture.shape[1] - self.patchSize):
-            for x in range(0, picture.shape[0] - self.patchSize):
+        for y in range(0, picture.shape[1] - self.patchSize + 1):
+            for x in range(0, picture.shape[0] - self.patchSize + 1):
                 sub_picture = picture[y:y + self.patchSize, x:x + self.patchSize]
                 batches.append(sub_picture)
         return batches
@@ -52,10 +52,11 @@ class Eye:
     def build_image_from_batches(self, batches):
         picture = self.get_calculated()
         next_batch = 0
-        for y in range(0, picture.shape[1] - self.patchSize):
-            for x in range(0, picture.shape[0] - self.patchSize):
+        for y in range(0, picture.shape[1] - self.patchSize + 1):
+            for x in range(0, picture.shape[0] - self.patchSize + 1):
                 picture[y:y + self.patchSize, x:x + self.patchSize] = batches[next_batch]
                 next_batch += 1
+        return picture
 
     def compare(self):
         w = self.get_calculated().shape[0]
