@@ -1,5 +1,6 @@
 # EyeFlow
 [![Build Status](https://travis-ci.org/zperkowski/EyeFlow.svg?branch=master)](https://travis-ci.org/zperkowski/EyeFlow)
+[![codecov](https://codecov.io/gh/zperkowski/EyeFlow/branch/master/graph/badge.svg)](https://codecov.io/gh/zperkowski/EyeFlow)
 
 Finding choroids of the eye on a picture obtained by ophthalmoscopy.
 
