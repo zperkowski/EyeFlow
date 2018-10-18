@@ -11,7 +11,7 @@ class Eye:
     __manual = None
     __mask = None
     __calculated = None
-    patchSize = 5
+    patchSize = 0
     x = int()
     y = int()
 
@@ -21,7 +21,11 @@ class Eye:
         self.__mask = mask
         self.__calculated = np.zeros(self.__manual.shape)
         self.__rawGrey = color.rgb2gray(self.__raw)
-        self.patchSize = patchSize
+        if patchSize > self.get_raw().shape[0] or patchSize > self.get_raw().shape[1]:
+            self.patchSize = min(self.get_raw().shape[0], self.get_raw().shape[1])
+            print("Warning: Size of patch bigger than image. Current patch size: " + str(self.patchSize))
+        else:
+            self.patchSize = patchSize
 
     def get_raw(self):
         return self.__raw

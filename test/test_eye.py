@@ -44,3 +44,14 @@ class TestEye(TestCase):
         test_batches = test_eye.get_batches_of_raw()
         image = test_eye.build_image_from_batches(test_batches)
         self.assertTrue(array_equal(test_image, image))
+
+    def test__get_batches_too_big(self):
+        test_eye = Eye(test_image, test_image, test_image, 10)
+        batches = test_eye.get_batches_of_raw()
+        self.assertTrue(array_equal(batches, [test_image]))
+
+    def test_build_image_from_batches_too_big(self):
+        test_eye = Eye(test_image, test_image, test_image, 10)
+        test_batches = test_eye.get_batches_of_raw()
+        image = test_eye.build_image_from_batches(test_batches)
+        self.assertTrue(array_equal(test_image, image))
