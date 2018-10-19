@@ -28,25 +28,25 @@ class DataLoader:
     _endProcessing = int()
 
     def __init__(self, healthy=True, glaucomatous=False, diabetic=False,
-                 startLearning=1, endLearning=1, startProcessing=2, endProcessing=2,
-                 patchSize=15):
+                 start_learning=1, end_learning=1, start_processing=2, end_processing=2,
+                 patch_size=15):
         self._load_healthy = healthy
         self._load_glaucomatous = glaucomatous
         self._load_diabetic = diabetic
-        self._startLearning = startLearning-1
-        self._endLearning = endLearning-1
-        self._startProcessing = startProcessing-1
-        self._endProcessing = endProcessing-1
-        self.patchSize = patchSize
+        self._startLearning = start_learning - 1
+        self._endLearning = end_learning - 1
+        self._startProcessing = start_processing - 1
+        self._endProcessing = end_processing - 1
+        self.patchSize = patch_size
 
-        if (healthy):
-            if (self.__isMissingFile(self._healthy_ends_with)):
+        if healthy:
+            if self.__is_missing_file(self._healthy_ends_with):
                 raise FileNotFoundError("Missing files")
-        if (glaucomatous):
-            if (self.__isMissingFile(self._glaucomatous_ends_with)):
+        if glaucomatous:
+            if self.__is_missing_file(self._glaucomatous_ends_with):
                 raise FileNotFoundError("Missing files")
-        if (diabetic):
-            if (self.__isMissingFile(self._diabetic_ends_with)):
+        if diabetic:
+            if self.__is_missing_file(self._diabetic_ends_with):
                 raise FileNotFoundError("Missing files")
 
     def loadData(self, verbose):
@@ -59,38 +59,38 @@ class DataLoader:
         self.files_raw = os.listdir(self._raw_path)
         self.files_manual = os.listdir(self._manual_path)
         self.files_mask = os.listdir(self._mask_path)
-        for i in range(self._startLearning*3, (self._endLearning+1)*3):
-            if (verbose):
+        for i in range(self._startLearning * 3, (self._endLearning + 1) * 3):
+            if verbose:
                 print("Loading: " + self.files_raw[i] + "\t" + self.files_manual[i] + "\t" + self.files_mask[i])
-            if (self._load_healthy):
+            if self._load_healthy:
                 eye = self.loadHealthyEye(i)
                 if (eye != None):
                     eyesToTrain.get("h").append(eye)
 
-            if (self._load_glaucomatous):
+            if self._load_glaucomatous:
                 eye = self.loadGlaucomatousEye(i)
                 if (eye != None):
                     eyesToTrain.get("d").append(eye)
 
-            if (self._load_diabetic):
+            if self._load_diabetic:
                 eye = self.loadDiabeticEye(i)
                 if (eye != None):
                     eyesToTrain.get("g").append(eye)
 
-        for i in range(self._startProcessing*3, (self._endProcessing+1)*3):
-            if (verbose):
+        for i in range(self._startProcessing * 3, (self._endProcessing + 1) * 3):
+            if verbose:
                 print("Loading: " + self.files_raw[i] + "\t" + self.files_manual[i] + "\t" + self.files_mask[i])
-            if (self._load_healthy):
+            if self._load_healthy:
                 eye = self.loadHealthyEye(i)
                 if (eye != None):
                     eyesToProcess.get("h").append(eye)
 
-            if (self._load_glaucomatous):
+            if self._load_glaucomatous:
                 eye = self.loadGlaucomatousEye(i)
                 if (eye != None):
                     eyesToProcess.get("d").append(eye)
 
-            if (self._load_diabetic):
+            if self._load_diabetic:
                 eye = self.loadDiabeticEye(i)
                 if (eye != None):
                     eyesToProcess.get("g").append(eye)
@@ -105,34 +105,35 @@ class DataLoader:
 
         return eyesToTrain, eyesToProcess
 
-    def countFiles(self, path, ends_with):
+    def count_files(self, path, ends_with):
         counter = 0
         for file in os.listdir(path):
             if file.endswith(ends_with):
                 counter += 1
         return counter
 
-    def __isMissingFile(self, file_ending):
-        images = self.countFiles(self._raw_path, file_ending)
-        manuals = self.countFiles(self._manual_path, file_ending)
-        masks = self.countFiles(self._mask_path, file_ending)
-        if (images == manuals == masks):
+    def __is_missing_file(self, file_ending):
+        images = self.count_files(self._raw_path, file_ending)
+        manuals = self.count_files(self._manual_path, file_ending)
+        masks = self.count_files(self._mask_path, file_ending)
+        if images == manuals == masks:
             return False
         else:
             return True
 
+    # Todo: Refactor 3 functions below - use Regex
     def loadHealthyEye(self, number):
         if (self.files_raw[number].endswith(self._healthy_ends_with, 2, 4)
                 and self.files_manual[number].endswith(self._healthy_ends_with, 2, 4)
                 and self.files_mask[number].endswith(self._healthy_ends_with, 2, 4)):
-            if (number % 2 == 0):
+            if number % 2 == 0:
                 img_raw = mp_i.imread(os.path.join(self._raw_path, self.files_raw[number]))
                 img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))
                 img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))
             else:
-                img_raw = mp_i.imread(os.path.join(self._raw_path, self.files_raw[number]))[:,::-1]
-                img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))[:,::-1]
-                img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))[:,::-1]
+                img_raw = mp_i.imread(os.path.join(self._raw_path, self.files_raw[number]))[:, ::-1]
+                img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))[:, ::-1]
+                img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))[:, ::-1]
             h_eye = Eye.Eye(img_raw, img_manual, img_mask, self.patchSize)
             return h_eye
         else:
@@ -147,9 +148,9 @@ class DataLoader:
                 img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))
                 img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))
             else:
-                img_raw = mp_i.imread(os.path.join(self._raw_path, self.files_raw[number]))[:,::-1]
-                img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))[:,::-1]
-                img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))[:,::-1]
+                img_raw = mp_i.imread(os.path.join(self._raw_path, self.files_raw[number]))[:, ::-1]
+                img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))[:, ::-1]
+                img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))[:, ::-1]
             g_eye = Eye.Eye(img_raw, img_manual, img_mask, self.patchSize)
             return g_eye
         else:
@@ -164,9 +165,9 @@ class DataLoader:
                 img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))
                 img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))
             else:
-                img_raw = mp_i.imread(os.path.join(self._raw_path, self.files_raw[number]))[:,::-1]
-                img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))[:,::-1]
-                img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))[:,::-1]
+                img_raw = mp_i.imread(os.path.join(self._raw_path, self.files_raw[number]))[:, ::-1]
+                img_manual = mp_i.imread(os.path.join(self._manual_path, self.files_manual[number]))[:, ::-1]
+                img_mask = mp_i.imread(os.path.join(self._mask_path, self.files_mask[number]))[:, ::-1]
             d_eye = Eye.Eye(img_raw, img_manual, img_mask, self.patchSize)
             return d_eye
         else:
