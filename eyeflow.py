@@ -15,17 +15,17 @@ if __name__ == '__main__':
         args.glaucomatous,
         args.diabetic,
         args.startLearning,
-        args.endLearning,
+        args.endLearning+1,
         args.startProcessing,
-        args.endProcessing,
+        args.endProcessing+1,
         args.patchSize)
     eyesToTrain, eyesToCalculate = dataLoader.loadData(verbose=args.verbose)
 
-    tfl.runTensorFlow(
-        eyesToTrain,
-        eyesToCalculate,
-        batch_size=args.batch,
-        learning_rate=args.learningRate,
-        training_epochs=args.epochs,
-        patch_size=args.patchSize,
-        verbose=args.verbose)
+    # tfl.runTensorFlow(
+    #     eyesToTrain,
+    #     eyesToCalculate,
+    #     batch_size=args.batch,
+    #     learning_rate=args.learningRate,
+    #     training_epochs=args.epochs,
+    #     patch_size=args.patchSize,
+    #     verbose=args.verbose)

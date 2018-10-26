@@ -1,5 +1,6 @@
 import argparse
 
+
 def parseArgs():
     parser = argparse.ArgumentParser()
 
