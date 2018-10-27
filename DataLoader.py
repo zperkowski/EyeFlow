@@ -61,7 +61,10 @@ class DataLoader:
         self.files_mask = os.listdir(self._mask_path)
 
         if self._load_healthy:
-            files_raw_healthy = self.filter_files(self.files_raw, self._healthy_ends_with)
+            files_raw_healthy = self.filter_files(self.files_raw,
+                                                  self._healthy_ends_with,
+                                                  self._startLearning,
+                                                  self._endLearning)
             eyes_to_train["h"] = self.load_list_of_eyes(files_raw_healthy,
                                                         self._startLearning,
                                                         self._endLearning,
@@ -72,7 +75,10 @@ class DataLoader:
                                                           verbose)
 
         if self._load_diabetic:
-            files_raw_diabetic = self.filter_files(self.files_raw, self._diabetic_ends_with)
+            files_raw_diabetic = self.filter_files(self.files_raw,
+                                                   self._diabetic_ends_with,
+                                                   self._startLearning,
+                                                   self._endLearning)
             eyes_to_train["d"] = self.load_list_of_eyes(files_raw_diabetic,
                                                         self._startLearning,
                                                         self._endLearning,
@@ -83,7 +89,10 @@ class DataLoader:
                                                           verbose)
 
         if self._load_glaucomatous:
-            files_raw_glaucomatous = self.filter_files(self.files_raw, self._glaucomatous_ends_with)
+            files_raw_glaucomatous = self.filter_files(self.files_raw,
+                                                       self._glaucomatous_ends_with,
+                                                       self._startLearning,
+                                                       self._endLearning)
             eyes_to_train["g"] = self.load_list_of_eyes(files_raw_glaucomatous,
                                                         self._startLearning,
                                                         self._endLearning,
@@ -104,10 +113,11 @@ class DataLoader:
         return eyes_to_train, eyes_to_process
 
     @staticmethod
-    def filter_files(list_of_files, filename_ends_with):
+    def filter_files(list_of_files, filename_ends_with, start, end):
         files = []
+        numbers = DataLoader.generate_list_of_numbers(start+1, end+1)
         for file in list_of_files:
-            if filename_ends_with in file:
+            if filename_ends_with in file and True in [num in file for num in numbers]:
                 files.append(file)
         return files
 
@@ -126,7 +136,7 @@ class DataLoader:
     def generate_list_of_numbers(start, end):
         numbers = []
         for i in range(start, end + 1):
-            s = "%03d" % i
+            s = "%02d" % i
             numbers.append(s)
         return numbers
 
