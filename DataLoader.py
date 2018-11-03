@@ -16,6 +16,8 @@ class DataLoader:
     _healthy_ends_with = "_h"
     _glaucomatous_ends_with = "_g"
     _diabetic_ends_with = "_dr"
+    _mask_ends_with = "_mask.tif"
+    _manual_ends_with = ".tif"
 
     files_raw = []
     files_manual = []
@@ -158,15 +160,14 @@ class DataLoader:
             return False
 
     def loadEye(self, file, reverse=False):
-        # Todo: Refactor .split('.')[0] + ".tif" and "_mask.tif"
         if not reverse:
             img_raw = mp_i.imread(os.path.join(self._raw_path, file))
-            img_manual = mp_i.imread(os.path.join(self._manual_path, file.split('.')[0] + ".tif"))
-            img_mask = mp_i.imread(os.path.join(self._mask_path, file.split('.')[0] + "_mask.tif"))
+            img_manual = mp_i.imread(os.path.join(self._manual_path, file.split('.')[0] + self._manual_ends_with))
+            img_mask = mp_i.imread(os.path.join(self._mask_path, file.split('.')[0] + self._mask_ends_with))
         else:
             img_raw = mp_i.imread(os.path.join(self._raw_path, file))[:, ::-1]
-            img_manual = mp_i.imread(os.path.join(self._manual_path, file.split('.')[0] + ".tif"))[:, ::-1]
-            img_mask = mp_i.imread(os.path.join(self._mask_path, file.split('.')[0] + "_mask.tif"))[:, ::-1]
+            img_manual = mp_i.imread(os.path.join(self._manual_path, file.split('.')[0] + self._manual_ends_with))[:, ::-1]
+            img_mask = mp_i.imread(os.path.join(self._mask_path, file.split('.')[0] + self._mask_ends_with))[:, ::-1]
         eye = Eye.Eye(img_raw, img_manual, img_mask, self.patchSize)
         eye.plot_raw()
         eye.plot_manual()
