@@ -17,9 +17,11 @@ class Eye:
 
     def __init__(self, raw, manual, mask, patchSize):
         self.__raw = raw
+        self.__raw_batches = None
         self.__manual = manual
-        self.__mask = mask
+        self.__manual_batches = None
         self.__calculated = np.zeros(self.__manual.shape)
+        self.__mask = mask
         self.__rawGrey = color.rgb2gray(self.__raw)
         if patchSize > self.get_raw().shape[0] or patchSize > self.get_raw().shape[1]:
             self.patchSize = min(self.get_raw().shape[0], self.get_raw().shape[1])
@@ -39,7 +41,7 @@ class Eye:
     def get_calculated(self):
         return self.__calculated
 
-    def _get_batches(self, picture):
+    def _generate_batches(self, picture):
         batches = []
         for y in range(0, picture.shape[1] - self.patchSize + 1):
             for x in range(0, picture.shape[0] - self.patchSize + 1):
@@ -48,10 +50,20 @@ class Eye:
         return batches
 
     def get_batches_of_raw(self):
-        return self._get_batches(self.get_raw())
+        if not self.__raw_batches:
+            self.generate_batches_of_raw()
+        return self.__raw_batches
 
     def get_batches_of_manual(self):
-        return self._get_batches(self.get_manual())
+        if not self.__manual_batches:
+            self.generate_batches_of_manual()
+        return self.__manual_batches
+
+    def generate_batches_of_raw(self):
+        self.__raw_batches = self._generate_batches(self.__raw)
+
+    def generate_batches_of_manual(self):
+        self.__manual_batches = self._generate_batches(self.__manual)
 
     def build_image_from_batches(self, batches):
         picture = self.get_calculated()

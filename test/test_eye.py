@@ -55,3 +55,17 @@ class TestEye(TestCase):
         test_batches = test_eye.get_batches_of_raw()
         image = test_eye.build_image_from_batches(test_batches)
         self.assertTrue(array_equal(test_image, image))
+
+    def test_generate_batches_of_raw(self):
+        test_eye = Eye(test_image, test_image, test_image, 2)
+        self.assertEqual(len(test_batches), len(test_eye.get_batches_of_raw()))
+        self.assertEqual(len(test_batches), len(test_eye.get_batches_of_raw()))
+
+    def test_generate_batches_of_manual(self):
+        test_eye = Eye(test_image, test_image, test_image, 2)
+        self.assertEqual(len(test_batches), len(test_eye.get_batches_of_manual()))
+        self.assertEqual(len(test_batches), len(test_eye.get_batches_of_manual()))
+
+    def test_generate_batches_of_manual_too_big(self):
+        test_eye = Eye(test_image, test_image, test_image, 10)
+        self.assertEqual(1, len(test_eye.get_batches_of_manual()))

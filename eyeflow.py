@@ -3,7 +3,7 @@ import os
 # Disabling the warning, doesn't enable AVX/FMA
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-import tensorflowloader as tfl
+# import tensorflowloader as tfl
 import DataLoader, ui
 
 
@@ -19,7 +19,7 @@ if __name__ == '__main__':
         args.startProcessing,
         args.endProcessing+1,
         args.patchSize)
-    eyesToTrain, eyesToCalculate = dataLoader.loadData(verbose=args.verbose)
+    eyes_to_train, eyes_to_calculate = dataLoader.loadData(verbose=args.verbose)
 
     # tfl.runTensorFlow(
     #     eyesToTrain,
