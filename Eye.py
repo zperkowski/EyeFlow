@@ -43,8 +43,8 @@ class Eye:
 
     def _generate_batches(self, picture):
         batches = []
-        for y in range(0, picture.shape[1] - self.patchSize + 1):
-            for x in range(0, picture.shape[0] - self.patchSize + 1):
+        for y in range(0, picture.shape[0] - self.patchSize + 1):
+            for x in range(0, picture.shape[1] - self.patchSize + 1):
                 sub_picture = picture[y:y + self.patchSize, x:x + self.patchSize]
                 batches.append(sub_picture)
         return batches
