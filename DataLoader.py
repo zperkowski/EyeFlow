@@ -159,7 +159,7 @@ class DataLoader:
         else:
             return False
 
-    def loadEye(self, file, reverse=False):
+    def loadEye(self, file, reverse=False, plot_loaded_images=False):
         if not reverse:
             img_raw = mp_i.imread(os.path.join(self._raw_path, file))
             img_manual = mp_i.imread(os.path.join(self._manual_path, file.split('.')[0] + self._manual_ends_with))
@@ -169,7 +169,8 @@ class DataLoader:
             img_manual = mp_i.imread(os.path.join(self._manual_path, file.split('.')[0] + self._manual_ends_with))[:, ::-1]
             img_mask = mp_i.imread(os.path.join(self._mask_path, file.split('.')[0] + self._mask_ends_with))[:, ::-1]
         eye = Eye.Eye(img_raw, img_manual, img_mask, self.patchSize)
-        eye.plot_raw()
-        eye.plot_manual()
-        eye.plot_image(eye.get_mask())
+        if plot_loaded_images:
+            eye.plot_raw()
+            eye.plot_manual()
+            eye.plot_image(eye.get_mask())
         return eye
