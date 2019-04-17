@@ -4,15 +4,15 @@ import numpy as np
 import tempfile
 import os
 
-global x, y
+global x, y, loss
 
 
-def setup_model(shape_x, shape_y, patch_size):
-    global x, y
+def setup_model(batches, shape_x, shape_y, patch_size):
+    global x, y, loss
     # tf Graph Input
-    x = tf.placeholder(tf.float32, [1, shape_x, shape_y, 3])
+    x = tf.placeholder(tf.float32, [batches, shape_x, shape_y, 3])
     # 2 possibilities to place 2 colors on the center pixel
-    y = tf.placeholder(tf.float32, [1, shape_x, shape_y])
+    y = tf.placeholder(tf.float32, [batches, shape_x, shape_y])
 
     scores = tf.layers.conv2d(x, 1, [patch_size,
                                      patch_size], padding='same', activation=None)
@@ -45,9 +45,11 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
         print("Traning epochs:\t\t" + str(training_epochs))
 
     # Todo: Generalize
-    shape_y = eyesToTrain.get('h')[0].get_raw().shape[0]
-    shape_x = eyesToTrain.get('h')[0].get_raw().shape[1]
-    step, y_pred, session = setup_model(shape_y, shape_x, patch_size)
+    batches_xs = eyesToTrain.get('h')[0].get_batches_of_raw()
+    shape_x = batches_xs[0].shape[1]
+    shape_y = batches_xs[0].shape[0]
+    batches_ys = eyesToTrain.get('h')[0].get_batches_of_calculated()
+    step, y_pred, session = setup_model(len(batches_xs), shape_y, shape_x, patch_size)
 
     # Parameters (with batch_size, learning_rate and training_epochs)
     display_step = 1
@@ -62,21 +64,22 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
         eye = eyesToTrain.get('h')[i_eye]
         eye.plot_raw(extraStr=str(i_eye + 1) + " traning")
         eye.plot_manual(extraStr=str(i_eye + 1) + " traning")
+        avg_cost = 0.
         for epoch in range(training_epochs):
             # Loop over all patches
             prevProgress = "0.00%"
-
-            batch_xs = eye.get_batches_of_raw()
-            batch_ys = eye.get_batches_of_calculated()
+            avg_cost += session.run(loss, feed_dict={x: batches_xs, y: batches_ys})
+            batches_xs = eye.get_batches_of_raw()
+            batches_ys = eye.get_batches_of_calculated()
             # Fit training using batch data
-            session.run(step, feed_dict={x: batch_xs, y: batch_ys})
-
+            session.run(step, feed_dict={x: batches_xs, y: batches_ys})
             # Display logs per epoch step
             if epoch % display_step == 0:
                 print(
-                    "\rEpoch: " + '%04d' % (epoch + 1) + "\t\t100.00%" + "\t\tcost = " + "{:.9f}".format(avg_cost),
+                    "\rEpoch: " + '%04d' % (epoch + 1) + "\t\t100.00%" + "\t\tcost = " + "{:.9f}".format(np.average(avg_cost)),
                     flush=True)
             epoch_set.append(epoch + 1)
+            avg_set.append(np.average(avg_cost))
         print("Training phase finished for " + str(i_eye + 1) + " eye")
 
         plt.plot(epoch_set, avg_set, 'o', label='Logistic Regression Training phase - ' + str(i_eye + 1) + ' eye')
@@ -84,14 +87,6 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
         plt.xlabel('epoch')
         plt.legend()
         plt.show()
-
-        # Test model
-        correct_prediction = tf.equal(tf.argmax(step, 1), tf.argmax(y, 1))
-        # Calculate accuracy
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-        # print("Model accuracy (training) " + str(i_eye + 1) + " eye: \t",
-        #       accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0],
-        #                      y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
 
     for i_eye in range(len(eyesToCalculate.get('h'))):
         eye = eyesToCalculate.get('h')[i_eye]

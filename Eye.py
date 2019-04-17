@@ -1,3 +1,5 @@
+import cv2
+
 import numpy as np
 from matplotlib import pyplot as plt
 from skimage import color
@@ -15,14 +17,20 @@ class Eye:
     x = int()
     y = int()
 
-    def __init__(self, raw, manual, mask, patchSize):
-        self.__raw = raw
+    def __init__(self, raw, manual, mask, patchSize, resize=None):
+        if resize:
+            self.__raw = cv2.resize(raw, dsize=(int(raw.shape[1]*resize), int(raw.shape[0]*resize)), interpolation=cv2.INTER_CUBIC)
+            self.__manual = cv2.resize(manual, dsize=(int(manual.shape[1]*resize), int(manual.shape[0]*resize)), interpolation=cv2.INTER_CUBIC)
+            self.__mask = cv2.resize(mask, dsize=(int(mask.shape[1]*resize), int(mask.shape[0]*resize)), interpolation=cv2.INTER_CUBIC)
+        else:
+            self.__raw = raw
+            self.__manual = manual
+            self.__mask = mask
+
         self.__raw_batches = None
-        self.__manual = manual
         self.__manual_batches = None
         self.__calculated = np.zeros(self.__manual.shape)
         self.__calculated_batches = None
-        self.__mask = mask
         self.__rawGrey = color.rgb2gray(self.__raw)
         if patchSize > self.get_raw().shape[0] or patchSize > self.get_raw().shape[1]:
             self.patchSize = min(self.get_raw().shape[0], self.get_raw().shape[1])
