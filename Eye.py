@@ -110,15 +110,16 @@ class Eye:
             difference = 0.0
         return difference
 
-    def build_image(self, classification, threshold=0.5):
-        flat_calculated = np.zeros(classification.shape)
+    def build_image(self, classification, threshold=0.2):
+        picture = self.get_calculated()
         t = np.max(classification) * threshold
-        for y in range(int(classification.shape[1])):
-            for x in range(int(classification.shape[0])):
-                if classification[x, y] > t:
-                    flat_calculated[x, y] = 255
-
-        self.__calculated = flat_calculated
+        next_batch = 0
+        for y in range(0, picture.shape[1] - self.patchSize + 1):
+            for x in range(0, picture.shape[0] - self.patchSize + 1):
+                if classification[next_batch, int(self.patchSize/2), int(self.patchSize/2)] > t:
+                    picture[y:y + self.patchSize, x:x + self.patchSize] = 1.0
+                next_batch += 1
+        self.__calculated = picture
 
     def plot_raw(self, extraStr=''):
         self.plot_image(self.get_raw(), 'Raw ' + str(extraStr))

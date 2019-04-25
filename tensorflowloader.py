@@ -92,17 +92,11 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
         eye = eyesToCalculate.get('h')[i_eye]
         eye.plot_raw(extraStr=str(i_eye + 1) + " processing")
         eye.plot_manual(extraStr=str(i_eye + 1) + " processing")
-        # Test model
-        correct_prediction = tf.equal(tf.argmax(step, 1), tf.argmax(y, 1))
-        # Calculate accuracy
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-        # print("\nModel accuracy (processing) " + str(i_eye + 1) + " eye: \t",
-        #       accuracy.eval({x: eye.getNextBatch(accuracy_batch_size, True)[0],
-        #                      y: eye.getNextBatch(accuracy_batch_size, True)[1]}))
+        eye.plot_calculated(extraStr=str(i_eye + 1) + " processing")
 
         feed_dict = {x: eye.get_batches_of_raw()}
         # Gets only the middle point
-        classification = session.run(y_pred, feed_dict)
+        classification = session.run(y_pred, feed_dict=feed_dict)
         print('\r' + "Calculated " + str(i_eye + 1)
               + " eye:\t\t\t\t\t\t\t100.00%", flush=True)
         print("Building an image based on predictions...")
@@ -110,9 +104,10 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
         plt.imshow(classification[0, :, :, 0], cmap="gray")
         plt.show()
 
-        for threshold in range(5, 10):
+        for threshold in range(1, 10):
             threshold *= 0.1
-            eye.build_image(eye.get_manual(), threshold)
+            threshold = round(threshold, 1)
+            eye.build_image(classification, threshold)
             eye.plot_calculated(extraStr=str(i_eye + 1) + " processing " + str(threshold))
             print("Difference between manual and predicted " + str(threshold) + ":\t\t"
                   + "{:.2f}".format(eye.compare() * 100) + "%")
