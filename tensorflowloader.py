@@ -1,8 +1,11 @@
+import random
+
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 import tempfile
 import os
+from sklearn.preprocessing import normalize
 
 global x, y, loss
 
@@ -70,7 +73,9 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             prevProgress = "0.00%"
             avg_cost += session.run(loss, feed_dict={x: batches_xs, y: batches_ys})
             batches_xs = eye.get_batches_of_raw()
+            batches_xs = normalize(np.array(batches_xs).reshape(1, -1), norm='max').reshape(len(batches_xs), shape_x, shape_y, 3)
             batches_ys = eye.get_batches_of_calculated()
+            batches_ys = normalize(np.array(batches_ys).reshape(1, -1), norm='max').reshape(len(batches_ys), shape_x, shape_y)
             # Fit training using batch data
             session.run(step, feed_dict={x: batches_xs, y: batches_ys})
             # Display logs per epoch step
@@ -101,8 +106,10 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
               + " eye:\t\t\t\t\t\t\t100.00%", flush=True)
         print("Building an image based on predictions...")
 
-        plt.imshow(classification[0, :, :, 0], cmap="gray")
-        plt.show()
+        for p in range(10):
+            i = random.randint(0, len(classification))
+            eye.plot_image(eye.get_batches_of_manual()[i], "Random calculated batch #" + str(p))
+            eye.plot_image(classification[i, :, :, 0], "Random predicted batch #" + str(p))
 
         for threshold in range(1, 10):
             threshold *= 0.1
