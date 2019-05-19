@@ -107,7 +107,7 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
         print("Building an image based on predictions...")
 
         for p in range(10):
-            i = random.randint(0, len(classification))
+            i = random.randint(0, len(classification) - 1)
             eye.plot_image(eye.get_batches_of_manual()[i], "Random calculated batch #" + str(p))
             eye.plot_image(classification[i, :, :, 0], "Random predicted batch #" + str(p))
 
