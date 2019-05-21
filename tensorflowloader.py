@@ -106,18 +106,18 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
               + " eye:\t\t\t\t\t\t\t100.00%", flush=True)
         print("Building an image based on predictions...")
 
-        for p in range(10):
+        for p in range(5):
             i = random.randint(0, len(classification) - 1)
             eye.plot_image(eye.get_batches_of_manual()[i], "Random calculated batch #" + str(p))
             eye.plot_image(classification[i, :, :, 0], "Random predicted batch #" + str(p))
 
-        for threshold in range(1, 10):
-            threshold *= 0.1
-            threshold = round(threshold, 1)
-            eye.build_image(classification, threshold)
-            eye.plot_calculated(extraStr=str(i_eye + 1) + " processing " + str(threshold))
-            print("Difference between manual and predicted " + str(threshold) + ":\t\t"
-                  + "{:.2f}".format(eye.compare() * 100) + "%")
+        batches_of_manual = eye.get_batches_of_manual()
+        eye.build_image_from_batches(np.array(batches_of_manual))
+        eye.plot_calculated(extraStr=str(i_eye + 1) + " manual")
+        eye.build_image_from_batches(classification.reshape(classification.shape[:-1]))
+        eye.plot_calculated(extraStr=str(i_eye + 1) + " calculated")
+        print("Difference between manual and predicted:\t\t"
+              + "{:.2f}".format(eye.compare() * 100) + "%")
 
         if verbose:
             path = os.path.join(tempfile.gettempdir(), "tensorflowlogs")

@@ -17,7 +17,7 @@ class Eye:
     x = int()
     y = int()
 
-    def __init__(self, raw, manual, mask, patchSize, resize=None):
+    def __init__(self, raw, manual, mask, patchSize, resize=0.03):
         if resize:
             self.__raw = cv2.resize(raw, dsize=(int(raw.shape[1]*resize), int(raw.shape[0]*resize)), interpolation=cv2.INTER_CUBIC)
             self.__manual = cv2.resize(manual, dsize=(int(manual.shape[1]*resize), int(manual.shape[0]*resize)), interpolation=cv2.INTER_CUBIC)
@@ -52,8 +52,8 @@ class Eye:
 
     def _generate_batches(self, picture):
         batches = []
-        for y in range(0, picture.shape[0] - self.patchSize + 1):
-            for x in range(0, picture.shape[1] - self.patchSize + 1):
+        for y in range(0, picture.shape[0] - self.patchSize + 1, self.patchSize):
+            for x in range(0, picture.shape[1] - self.patchSize + 1, self.patchSize):
                 sub_picture = picture[y:y + self.patchSize, x:x + self.patchSize]
                 batches.append(sub_picture)
         return batches
@@ -85,9 +85,9 @@ class Eye:
     def build_image_from_batches(self, batches):
         picture = self.get_calculated()
         next_batch = 0
-        for y in range(0, picture.shape[1] - self.patchSize + 1):
-            for x in range(0, picture.shape[0] - self.patchSize + 1):
-                picture[y:y + self.patchSize, x:x + self.patchSize] = batches[next_batch]
+        for y in range(0, picture.shape[0] - self.patchSize + 1, self.patchSize):
+            for x in range(0, picture.shape[1] - self.patchSize + 1, self.patchSize):
+                picture[y:y+self.patchSize, x:x+self.patchSize] = batches[next_batch]
                 next_batch += 1
         return picture
 
@@ -109,17 +109,6 @@ class Eye:
         else:
             difference = 0.0
         return difference
-
-    def build_image(self, classification, threshold=0.2):
-        picture = self.get_calculated()
-        t = np.max(classification) * threshold
-        next_batch = 0
-        for y in range(0, picture.shape[1] - self.patchSize + 1):
-            for x in range(0, picture.shape[0] - self.patchSize + 1):
-                if classification[next_batch, int(self.patchSize/2), int(self.patchSize/2)] > t:
-                    picture[y:y + self.patchSize, x:x + self.patchSize] = 1.0
-                next_batch += 1
-        self.__calculated = picture
 
     def plot_raw(self, extraStr=''):
         self.plot_image(self.get_raw(), 'Raw ' + str(extraStr))

@@ -13,58 +13,40 @@ test_image = array([
 test_batches = [
     array([[0.93, 0.95],
            [0.73, 0.75]]),
-    array([[0.95, 0.97],
-           [0.75, 0.77]]),
     array([[0.97, 0.99],
            [0.77, 0.79]]),
-    array([[0.73, 0.75],
-           [0.43, 0.45]]),
-    array([[0.75, 0.77],
-           [0.45, 0.47]]),
-    array([[0.77, 0.79],
-           [0.47, 0.49]]),
     array([[0.43, 0.45],
            [0.13, 0.15]]),
-    array([[0.45, 0.47],
-           [0.15, 0.17]]),
     array([[0.47, 0.49],
            [0.17, 0.19]])
 ]
 
-test_image_2 = array([
+test_image_odd = array([
     [0.93, 0.95, 0.97, 0.99, 0.3],
     [0.73, 0.75, 0.77, 0.79, 0.32],
     [0.43, 0.45, 0.47, 0.49, 0.33],
-    [0.13, 0.15, 0.17, 0.19, 0.35]
+    [0.13, 0.15, 0.17, 0.19, 0.35],
+    [0.03, 0.05, 0.07, 0.09, 0.25]
 ])
 
-test_batches_2 = [
+test_batches_odd = [
     array([[0.93, 0.95],
            [0.73, 0.75]]),
-    array([[0.95, 0.97],
-           [0.75, 0.77]]),
     array([[0.97, 0.99],
            [0.77, 0.79]]),
-    array([[0.99, 0.3],
-           [0.79, 0.32]]),
-    array([[0.73, 0.75],
-           [0.43, 0.45]]),
-    array([[0.75, 0.77],
-           [0.45, 0.47]]),
-    array([[0.77, 0.79],
-           [0.47, 0.49]]),
-    array([[0.79, 0.32],
-           [0.49, 0.33]]),
     array([[0.43, 0.45],
            [0.13, 0.15]]),
-    array([[0.45, 0.47],
-           [0.15, 0.17]]),
     array([[0.47, 0.49],
-           [0.17, 0.19]]),
-    array([[0.49, 0.33],
-           [0.19, 0.35]])
+           [0.17, 0.19]])
 ]
 
+test_image_odd_output = array([
+    [0.93, 0.95, 0.97, 0.99, 0.],
+    [0.73, 0.75, 0.77, 0.79, 0.],
+    [0.43, 0.45, 0.47, 0.49, 0.],
+    [0.13, 0.15, 0.17, 0.19, 0.],
+    [0., 0., 0., 0., 0.]
+])
 
 class TestEye(TestCase):
 
@@ -74,15 +56,21 @@ class TestEye(TestCase):
         self.assertTrue(array_equal(batches, test_batches))
 
     def test_get_batches_2(self):
-        test_eye = Eye(test_image_2, test_image_2, test_image_2, 2)
+        test_eye = Eye(test_image_odd, test_image_odd, test_image_odd, 2)
         batches = test_eye.get_batches_of_raw()
-        self.assertTrue(array_equal(batches, test_batches_2))
+        self.assertTrue(array_equal(batches, test_batches_odd))
 
     def test_build_image_from_batches(self):
         test_eye = Eye(test_image, test_image, test_image, 2)
         test_batches = test_eye.get_batches_of_raw()
         image = test_eye.build_image_from_batches(test_batches)
         self.assertTrue(array_equal(test_image, image))
+
+    def test_build_image_from_batches_odd(self):
+        test_eye = Eye(test_image_odd, test_image_odd, test_image_odd, 2)
+        test_batches = test_eye.get_batches_of_raw()
+        image = test_eye.build_image_from_batches(test_batches)
+        self.assertTrue(array_equal(test_image_odd_output, image))
 
     def test_get_batches_too_big(self):
         test_eye = Eye(test_image, test_image, test_image, 10)
