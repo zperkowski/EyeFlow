@@ -17,7 +17,7 @@ class Eye:
     x = int()
     y = int()
 
-    def __init__(self, raw, manual, mask, patchSize, resize=0.05):
+    def __init__(self, raw, manual, mask, patchSize, resize=None):
         if resize:
             self.__raw = cv2.resize(raw, dsize=(int(raw.shape[1]*resize), int(raw.shape[0]*resize)), interpolation=cv2.INTER_CUBIC)
             self.__manual = cv2.resize(manual, dsize=(int(manual.shape[1]*resize), int(manual.shape[0]*resize)), interpolation=cv2.INTER_CUBIC)
