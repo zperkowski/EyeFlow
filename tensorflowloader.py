@@ -19,6 +19,57 @@ def setup_model(batches, shape_x, shape_y, patch_size):
 
     y_pred = tf.layers.conv2d(x, 1, (1, 1), activation=tf.nn.relu)
 
+    conv3x3_relu = lambda x, num_f: tf.layers.conv2d(x, num_f, (3, 3), activation=tf.nn.relu)
+    upconv2x2 = lambda x, num_f: tf.layers.conv2d_transpose(x, num_f, (2, 2), (2, 2))
+    # downsampling
+    h = x  # 572
+
+    h = conv3x3_relu(h, 64)  # 570
+    h = conv3x3_relu(h, 64)  # 568
+    out_568 = h
+    h = tf.layers.max_pooling2d(h, (2, 2), (2, 2))  # 284
+    h = conv3x3_relu(h, 128)  # 282
+    h = conv3x3_relu(h, 128)  # 280
+    out_280 = h
+    h = tf.layers.max_pooling2d(h, (2, 2), (2, 2))  # 140
+    h = conv3x3_relu(h, 256)  # 138
+    h = conv3x3_relu(h, 256)  # 136
+    out_136 = h
+    h = tf.layers.max_pooling2d(h, (2, 2), (2, 2))  # 68
+    h = conv3x3_relu(h, 512)  # 66
+    h = conv3x3_relu(h, 512)  # 64
+    out_64 = h
+    h = tf.layers.max_pooling2d(h, (2, 2), (2, 2))  # 32
+    h = conv3x3_relu(h, 1024)  # 30
+    h = conv3x3_relu(h, 1024)  # 28
+
+    # upsampling
+    h = upconv2x2(h, 512)  # 56
+    h = tf.concat((h, out_64[:, 4:-4, 4:-4, :]), 3)
+    h = conv3x3_relu(h, 512)  # 54
+    h = conv3x3_relu(h, 512)  # 52
+
+    h = upconv2x2(h, 256)  # 104
+    h = tf.concat((h, out_136[:, 16:-16, 16:-16, :]), 3)
+    h = conv3x3_relu(h, 256)  # 102
+    h = conv3x3_relu(h, 256)  # 100
+
+    h = upconv2x2(h, 128)  # 200
+    h = tf.concat((h, out_280[:, 40:-40, 40:-40, :]), 3)
+    h = conv3x3_relu(h, 128)  # 198
+    h = conv3x3_relu(h, 128)  # 196
+
+    h = upconv2x2(h, 64)  # 392
+    h = tf.concat((h, out_568[:, 88:-88, 88:-88, :]), 3)
+    h = conv3x3_relu(h, 64)  # 390
+    h = conv3x3_relu(h, 64)  # 388
+
+    h = upconv2x2(h, 64)  # 392
+    h = tf.layers.conv2d(h, 32, (3, 3), activation=tf.nn.relu)
+
+    # final layer
+    y_pred = tf.layers.conv2d(h, 1, (203, 203))
+
     # Construct model
     loss = (tf.nn.sigmoid_cross_entropy_with_logits(
         labels=y,
