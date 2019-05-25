@@ -17,7 +17,7 @@ class Eye:
     x = int()
     y = int()
 
-    def __init__(self, raw, manual, mask, patchSize, resize=None):
+    def __init__(self, raw, manual, mask, patchSize, resize=0.05):
         if resize:
             self.__raw = cv2.resize(raw, dsize=(int(raw.shape[1]*resize), int(raw.shape[0]*resize)), interpolation=cv2.INTER_CUBIC)
             self.__manual = cv2.resize(manual, dsize=(int(manual.shape[1]*resize), int(manual.shape[0]*resize)), interpolation=cv2.INTER_CUBIC)
@@ -55,6 +55,8 @@ class Eye:
         for y in range(0, picture.shape[0] - self.patchSize + 1, self.patchSize):
             for x in range(0, picture.shape[1] - self.patchSize + 1, self.patchSize):
                 sub_picture = picture[y:y + self.patchSize, x:x + self.patchSize]
+                if len(sub_picture.shape) == 2:
+                    sub_picture = sub_picture.reshape((sub_picture.shape[0], sub_picture.shape[1], 1))
                 batches.append(sub_picture)
         return batches
 
@@ -87,7 +89,8 @@ class Eye:
         next_batch = 0
         for y in range(0, picture.shape[0] - self.patchSize + 1, self.patchSize):
             for x in range(0, picture.shape[1] - self.patchSize + 1, self.patchSize):
-                picture[y:y+self.patchSize, x:x+self.patchSize] = batches[next_batch]
+                batch = batches[next_batch]
+                picture[y:y+self.patchSize, x:x+self.patchSize] = batch.reshape(batch.shape[0], batch.shape[0])
                 next_batch += 1
         return picture
 
@@ -121,6 +124,8 @@ class Eye:
 
     @staticmethod
     def plot_image(image, title=''):
+        if len(image.shape) > 2 and image.shape[2] == 1:
+            image = image.reshape(image.shape[0], image.shape[1])
         plt.imshow(image, cmap='gray')
         plt.title(title)
         plt.show()

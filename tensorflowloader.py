@@ -13,18 +13,16 @@ global x, y, loss
 def setup_model(batches, shape_x, shape_y, patch_size):
     global x, y, loss
     # tf Graph Input
-    x = tf.placeholder(tf.float32, [batches, shape_x, shape_y, 3])
+    x = tf.placeholder(tf.float32, (batches, shape_x, shape_y, 3))
     # 2 possibilities to place 2 colors on the center pixel
-    y = tf.placeholder(tf.float32, [batches, shape_x, shape_y])
+    y = tf.placeholder(tf.float32, (batches, shape_x, shape_y, 1))
 
-    scores = tf.layers.conv2d(x, 1, [patch_size,
-                                     patch_size], padding='same', activation=None)
-    y_pred = tf.sigmoid(scores)
+    y_pred = tf.layers.conv2d(x, 1, (1, 1), activation=tf.nn.relu)
 
     # Construct model
     loss = (tf.nn.sigmoid_cross_entropy_with_logits(
-        labels=tf.reshape(y, [-1]),
-        logits=tf.reshape(scores, [-1])))
+        labels=y,
+        logits=y_pred))
 
     # Minimize error using cross entropy
     optim = tf.train.AdamOptimizer(1e-2)
@@ -75,7 +73,7 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             batches_xs = eye.get_batches_of_raw()
             batches_xs = normalize(np.array(batches_xs).reshape(1, -1), norm='max').reshape(len(batches_xs), shape_x, shape_y, 3)
             batches_ys = eye.get_batches_of_calculated()
-            batches_ys = normalize(np.array(batches_ys).reshape(1, -1), norm='max').reshape(len(batches_ys), shape_x, shape_y)
+            batches_ys = normalize(np.array(batches_ys).reshape(1, -1), norm='max').reshape(len(batches_ys), shape_x, shape_y, 1)
             # Fit training using batch data
             session.run(step, feed_dict={x: batches_xs, y: batches_ys})
             # Display logs per epoch step
