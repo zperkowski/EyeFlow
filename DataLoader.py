@@ -22,7 +22,7 @@ class DataLoader:
     files_raw = []
     files_manual = []
     files_mask = []
-    patchSize = int()
+    x_patch_size = int()
 
     _startLearning = int()
     _endLearning = int()
@@ -31,7 +31,7 @@ class DataLoader:
 
     def __init__(self, healthy=True, glaucomatous=False, diabetic=False,
                  start_learning=1, end_learning=1, start_processing=2, end_processing=2,
-                 patch_size=15):
+                 x_patch_size=15, y_patch_size=15):
         self._load_healthy = healthy
         self._load_glaucomatous = glaucomatous
         self._load_diabetic = diabetic
@@ -39,7 +39,8 @@ class DataLoader:
         self._endLearning = end_learning - 1
         self._startProcessing = start_processing - 1
         self._endProcessing = end_processing - 1
-        self.patchSize = patch_size
+        self.x_patch_size = x_patch_size
+        self.y_patch_size = y_patch_size
 
     def loadData(self, verbose):
         if self._load_healthy:
@@ -168,7 +169,7 @@ class DataLoader:
             img_raw = mp_i.imread(os.path.join(self._raw_path, file))[:, ::-1]
             img_manual = mp_i.imread(os.path.join(self._manual_path, file.split('.')[0] + self._manual_ends_with))[:, ::-1]
             img_mask = mp_i.imread(os.path.join(self._mask_path, file.split('.')[0] + self._mask_ends_with))[:, ::-1]
-        eye = Eye.Eye(img_raw, img_manual, img_mask, self.patchSize)
+        eye = Eye.Eye(img_raw, img_manual, img_mask, self.x_patch_size, self.y_patch_size)
         if plot_loaded_images:
             eye.plot_raw()
             eye.plot_manual()

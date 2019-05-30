@@ -13,11 +13,11 @@ class Eye:
     __manual = None
     __mask = None
     __calculated = None
-    patchSize = 0
+    x_patch_size = 0
     x = int()
     y = int()
 
-    def __init__(self, raw, manual, mask, patchSize, resize=None):
+    def __init__(self, raw, manual, mask, x_path_size, y_path_size, resize=0.3):
         if resize:
             self.__raw = cv2.resize(raw, dsize=(int(raw.shape[1]*resize), int(raw.shape[0]*resize)), interpolation=cv2.INTER_CUBIC)
             self.__manual = cv2.resize(manual, dsize=(int(manual.shape[1]*resize), int(manual.shape[0]*resize)), interpolation=cv2.INTER_CUBIC)
@@ -32,11 +32,14 @@ class Eye:
         self.__calculated = np.zeros(self.__manual.shape)
         self.__calculated_batches = None
         self.__rawGrey = color.rgb2gray(self.__raw)
-        if patchSize > self.get_raw().shape[0] or patchSize > self.get_raw().shape[1]:
-            self.patchSize = min(self.get_raw().shape[0], self.get_raw().shape[1])
-            print("Warning: Size of patch bigger than image. Current patch size: " + str(self.patchSize))
+        if x_path_size > self.get_raw().shape[0] or x_path_size > self.get_raw().shape[1]:
+            self.x_patch_size = min(self.get_raw().shape[0], self.get_raw().shape[1])
+            self.y_patch_size = min(self.get_raw().shape[0], self.get_raw().shape[1])
+            print("Warning: Size of patch bigger than image. Current patch size: " + str(self.x_patch_size))
         else:
-            self.patchSize = patchSize
+            self.x_patch_size = x_path_size
+            self.y_patch_size = y_path_size
+        self.side_shift = (self.x_patch_size - self.y_patch_size) // 2
 
     def get_raw(self):
         return self.__raw
@@ -50,11 +53,14 @@ class Eye:
     def get_calculated(self):
         return self.__calculated
 
-    def _generate_batches(self, picture):
+    def _generate_batches(self, picture, patch_size, side_shift=0):
         batches = []
-        for y in range(0, picture.shape[0] - self.patchSize + 1, self.patchSize):
-            for x in range(0, picture.shape[1] - self.patchSize + 1, self.patchSize):
-                sub_picture = picture[y:y + self.patchSize, x:x + self.patchSize]
+        for y in range(0, picture.shape[0] - self.x_patch_size + 1, self.x_patch_size):
+            for x in range(0, picture.shape[1] - self.x_patch_size + 1, self.x_patch_size):
+                sub_picture = picture[y + side_shift
+                                        : y + side_shift + patch_size,
+                                        x + side_shift
+                                        : x + side_shift + patch_size]
                 if len(sub_picture.shape) == 2:
                     sub_picture = sub_picture.reshape((sub_picture.shape[0], sub_picture.shape[1], 1))
                 batches.append(sub_picture)
@@ -76,21 +82,21 @@ class Eye:
         return self.__calculated_batches
 
     def generate_batches_of_raw(self):
-        self.__raw_batches = self._generate_batches(self.__raw)
+        self.__raw_batches = self._generate_batches(self.__raw, self.x_patch_size)
 
     def generate_batches_of_manual(self):
-        self.__manual_batches = self._generate_batches(self.__manual)
+        self.__manual_batches = self._generate_batches(self.__manual, self.y_patch_size, self.side_shift)
 
     def generate_batches_of_calculated(self):
-        self.__calculated_batches = self._generate_batches(self.__calculated)
+        self.__calculated_batches = self._generate_batches(self.__calculated, self.y_patch_size, self.side_shift)
 
     def build_image_from_batches(self, batches):
         picture = self.get_calculated()
         next_batch = 0
-        for y in range(0, picture.shape[0] - self.patchSize + 1, self.patchSize):
-            for x in range(0, picture.shape[1] - self.patchSize + 1, self.patchSize):
+        for y in range(0, picture.shape[0] - self.x_patch_size + 1, self.x_patch_size):
+            for x in range(0, picture.shape[1] - self.x_patch_size + 1, self.x_patch_size):
                 batch = batches[next_batch]
-                picture[y:y+self.patchSize, x:x+self.patchSize] = batch.reshape(batch.shape[0], batch.shape[0])
+                picture[y:y+self.x_patch_size, x:x + self.x_patch_size] = batch.reshape(batch.shape[0], batch.shape[0])
                 next_batch += 1
         return picture
 

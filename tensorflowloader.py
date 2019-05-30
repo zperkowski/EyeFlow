@@ -6,24 +6,23 @@ import numpy as np
 import tempfile
 import os
 from sklearn.preprocessing import normalize
+from tensorflow.python.keras import optimizers
 
 global x, y, loss
 
 
-def setup_model(batches, shape_x, shape_y, patch_size):
+def setup_model(batches, x_patch_size, y_patch_size):
     global x, y, loss
     # tf Graph Input
-    x = tf.placeholder(tf.float32, (batches, shape_x, shape_y, 3))
+    x = tf.placeholder(tf.float32, (batches, x_patch_size, x_patch_size, 3))
     # 2 possibilities to place 2 colors on the center pixel
-    y = tf.placeholder(tf.float32, (batches, shape_x, shape_y, 1))
-
-    y_pred = tf.layers.conv2d(x, 1, (1, 1), activation=tf.nn.relu)
+    y = tf.placeholder(tf.float32, (batches, y_patch_size, y_patch_size, 1))
 
     conv3x3_relu = lambda x, num_f: tf.layers.conv2d(x, num_f, (3, 3), activation=tf.nn.relu)
     upconv2x2 = lambda x, num_f: tf.layers.conv2d_transpose(x, num_f, (2, 2), (2, 2))
+
     # downsampling
     h = x  # 572
-
     h = conv3x3_relu(h, 64)  # 570
     h = conv3x3_relu(h, 64)  # 568
     out_568 = h
@@ -64,20 +63,15 @@ def setup_model(batches, shape_x, shape_y, patch_size):
     h = conv3x3_relu(h, 64)  # 390
     h = conv3x3_relu(h, 64)  # 388
 
-    h = upconv2x2(h, 64)  # 392
-    h = tf.layers.conv2d(h, 32, (3, 3), activation=tf.nn.relu)
-
     # final layer
-    y_pred = tf.layers.conv2d(h, 1, (203, 203))
+    y_pred = tf.layers.conv2d(h, 1, (1, 1))
 
-    # Construct model
-    loss = (tf.nn.sigmoid_cross_entropy_with_logits(
-        labels=y,
-        logits=y_pred))
+    loss = tf.nn.sigmoid(y_pred)
+    cost = tf.reduce_mean(tf.square(y_pred - y))
 
     # Minimize error using cross entropy
-    optim = tf.train.AdamOptimizer(1e-2)
-    step = optim.minimize(loss)
+    optim = tf.train.AdamOptimizer(learning_rate=0.0001)
+    step = optim.minimize(cost)
 
     init = tf.global_variables_initializer()
     session = tf.InteractiveSession()
@@ -86,7 +80,7 @@ def setup_model(batches, shape_x, shape_y, patch_size):
     return step, y_pred, session
 
 
-def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, training_epochs, patch_size, verbose):
+def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, training_epochs, x_patch_size, y_patch_size, verbose):
     if verbose:
         print("Training data:", end='')
         print_info_about_images(eyesToTrain)
@@ -98,11 +92,8 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
 
     # Todo: Generalize
     batches_xs = eyesToTrain.get('h')[0].get_batches_of_raw()
-    shape_x = batches_xs[0].shape[1]
-    shape_y = batches_xs[0].shape[0]
     batches_ys = eyesToTrain.get('h')[0].get_batches_of_calculated()
-    step, y_pred, session = setup_model(len(batches_xs), shape_y, shape_x, patch_size)
-
+    step, y_pred, session = setup_model(len(batches_xs), x_patch_size, y_patch_size)
     # Parameters (with batch_size, learning_rate and training_epochs)
     display_step = 1
 
@@ -122,9 +113,9 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             prevProgress = "0.00%"
             avg_cost += session.run(loss, feed_dict={x: batches_xs, y: batches_ys})
             batches_xs = eye.get_batches_of_raw()
-            batches_xs = normalize(np.array(batches_xs).reshape(1, -1), norm='max').reshape(len(batches_xs), shape_x, shape_y, 3)
+            batches_xs = normalize(np.array(batches_xs).reshape(1, -1), norm='max').reshape(len(batches_xs), x_patch_size, x_patch_size, 3)
             batches_ys = eye.get_batches_of_calculated()
-            batches_ys = normalize(np.array(batches_ys).reshape(1, -1), norm='max').reshape(len(batches_ys), shape_x, shape_y, 1)
+            batches_ys = normalize(np.array(batches_ys).reshape(1, -1), norm='max').reshape(len(batches_ys), y_patch_size, y_patch_size, 1)
             # Fit training using batch data
             session.run(step, feed_dict={x: batches_xs, y: batches_ys})
             # Display logs per epoch step

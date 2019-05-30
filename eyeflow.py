@@ -18,7 +18,8 @@ if __name__ == '__main__':
         args.endLearning+1,
         args.startProcessing,
         args.endProcessing+1,
-        args.patchSize)
+        x_patch_size=572,
+        y_patch_size=388)   # Todo: Add to arg parser
     eyes_to_train, eyes_to_calculate = dataLoader.loadData(verbose=args.verbose)
 
     tfl.runTensorFlow(
@@ -27,5 +28,9 @@ if __name__ == '__main__':
         batch_size=args.batch,
         learning_rate=args.learningRate,
         training_epochs=args.epochs,
-        patch_size=args.patchSize,
+        x_patch_size=572,
+        y_patch_size=388,   # Todo: Add to arg parser
         verbose=args.verbose)
+
+# X patch size: 572
+# Y patch size: 388
