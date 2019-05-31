@@ -114,7 +114,7 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             avg_cost += session.run(loss, feed_dict={x: batches_xs, y: batches_ys})
             batches_xs = eye.get_batches_of_raw()
             batches_xs = normalize(np.array(batches_xs).reshape(1, -1), norm='max').reshape(len(batches_xs), x_patch_size, x_patch_size, 3)
-            batches_ys = eye.get_batches_of_calculated()
+            batches_ys = eye.get_batches_of_manual()
             batches_ys = normalize(np.array(batches_ys).reshape(1, -1), norm='max').reshape(len(batches_ys), y_patch_size, y_patch_size, 1)
             # Fit training using batch data
             session.run(step, feed_dict={x: batches_xs, y: batches_ys})
