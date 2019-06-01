@@ -12,19 +12,20 @@ Finding choroids of the eye on a picture obtained by ophthalmoscopy.
 
 # Instalation
 
-[TensorFlow](https://www.tensorflow.org/install/)
+* [TensorFlow](https://www.tensorflow.org/install/)
 
 ```
-pip install matplotlib numpy scikit-image scipy
+cd EyeFlow/
+source ./bin/activate
+pip install -r requirements.txt
 ```
 
 # Data sets
-The main data set can be downloaded from [Friedrich-Alexander-Universität Erlangen-Nürnberg site](https://www5.cs.fau.de/research/data/fundus-images/).
-The program with a default configuration uses pictures from: [Download the whole dataset (~73 Mb)](https://www5.cs.fau.de/fileadmin/research/datasets/fundus-images/all.zip).
-Extract the archive and move folders `images`, `manual1`, and `mask` to `data` direcory.
+The dataset can be downloaded from [Friedrich-Alexander-Universität Erlangen-Nürnberg site](https://www5.cs.fau.de/research/data/fundus-images/).
+EyeFlow with the default configuration uses pictures from: [Download the whole dataset (~73 Mb)](https://www5.cs.fau.de/fileadmin/research/datasets/fundus-images/all.zip).
+Extract the archive and move folders `images`, `manual1`, and `mask` to `data` direcory in root directory of the project.
 
 # How to run
-If used `Virtualenv` from TensorFlow instalation guide:
 
 ```
 cd EyeFlow/
