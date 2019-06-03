@@ -6,13 +6,12 @@ import numpy as np
 import tempfile
 import os
 from sklearn.preprocessing import normalize
-from tensorflow.python.keras import optimizers
 
-global x, y, loss
+global x, y
 
 
 def setup_model(batches, x_patch_size, y_patch_size):
-    global x, y, loss
+    global x, y
     # tf Graph Input
     x = tf.placeholder(tf.float32, (batches, x_patch_size, x_patch_size, 3))
     # 2 possibilities to place 2 colors on the center pixel
@@ -66,18 +65,16 @@ def setup_model(batches, x_patch_size, y_patch_size):
     # final layer
     y_pred = tf.layers.conv2d(h, 1, (1, 1))
 
-    loss = tf.nn.sigmoid(y_pred)
-    cost = tf.reduce_mean(tf.square(y_pred - y))
-
     # Minimize error using cross entropy
     optim = tf.train.AdamOptimizer(learning_rate=0.0001)
-    step = optim.minimize(cost)
+    cost = tf.reduce_mean(tf.square(y_pred - y))
+    cost = optim.minimize(cost)
 
     init = tf.global_variables_initializer()
     session = tf.InteractiveSession()
     session.run(init)
 
-    return step, y_pred, session
+    return cost, y_pred, session
 
 
 def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, training_epochs, x_patch_size, y_patch_size, verbose):
@@ -93,45 +90,44 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
     # Todo: Generalize
     batches_xs = eyesToTrain.get('h')[0].get_batches_of_raw()
     batches_ys = eyesToTrain.get('h')[0].get_batches_of_calculated()
-    step, y_pred, session = setup_model(len(batches_xs), x_patch_size, y_patch_size)
+    cost, y_pred, session = setup_model(len(batches_xs), x_patch_size, y_patch_size)
     # Parameters (with batch_size, learning_rate and training_epochs)
     display_step = 1
 
     # # Training cycle
     # Todo: Process other than only healthy
-    for i_eye in range(len(eyesToTrain.get('h'))):
-        # Plot settings
-        avg_set = []
-        epoch_set = []
-        print("\nTraining on " + str(i_eye + 1) + " image")
-        eye = eyesToTrain.get('h')[i_eye]
-        eye.plot_raw(extraStr=str(i_eye + 1) + " traning")
-        eye.plot_manual(extraStr=str(i_eye + 1) + " traning")
+    avg_set = []
+    epoch_set = []
+    for epoch in range(training_epochs):
         avg_cost = 0.
-        for epoch in range(training_epochs):
+        # Plot settings
+        for i_eye in range(len(eyesToTrain.get('h'))):
+            print("\nTraining on " + str(i_eye + 1) + " image")
+            eye = eyesToTrain.get('h')[i_eye]
+            eye.plot_raw(extraStr=str(i_eye + 1) + " traning")
+            eye.plot_manual(extraStr=str(i_eye + 1) + " traning")
             # Loop over all patches
-            prevProgress = "0.00%"
-            avg_cost += session.run(loss, feed_dict={x: batches_xs, y: batches_ys})
+            cost_value = session.run(cost, feed_dict={x: batches_xs, y: batches_ys})
+            avg_cost += cost_value
             batches_xs = eye.get_batches_of_raw()
             batches_xs = normalize(np.array(batches_xs).reshape(1, -1), norm='max').reshape(len(batches_xs), x_patch_size, x_patch_size, 3)
             batches_ys = eye.get_batches_of_manual()
             batches_ys = normalize(np.array(batches_ys).reshape(1, -1), norm='max').reshape(len(batches_ys), y_patch_size, y_patch_size, 1)
             # Fit training using batch data
-            session.run(step, feed_dict={x: batches_xs, y: batches_ys})
-            # Display logs per epoch step
-            if epoch % display_step == 0:
-                print(
-                    "\rEpoch: " + '%04d' % (epoch + 1) + "\t\t100.00%" + "\t\tcost = " + "{:.9f}".format(np.average(avg_cost)),
-                    flush=True)
-            epoch_set.append(epoch + 1)
-            avg_set.append(np.average(avg_cost))
-        print("Training phase finished for " + str(i_eye + 1) + " eye")
+            print("Training phase finished for " + str(i_eye + 1) + " eye")
+        # Display logs per epoch step
+        if epoch % display_step == 0:
+            print(
+                "\rEpoch: " + '%04d' % (epoch + 1) + "\t\t100.00%" + "\t\tcost = " + "{:.9f}".format(np.average(avg_cost)),
+                flush=True)
 
-        plt.plot(epoch_set, avg_set, 'o', label='Logistic Regression Training phase - ' + str(i_eye + 1) + ' eye')
-        plt.ylabel('cost')
-        plt.xlabel('epoch')
-        plt.legend()
-        plt.show()
+        epoch_set.append(epoch + 1)
+        avg_set.append(np.average(avg_cost))
+    plt.plot(epoch_set, avg_set, 'o', label='Logistic Regression Training phase')
+    plt.ylabel('cost')
+    plt.xlabel('epoch')
+    plt.legend()
+    plt.show()
 
     for i_eye in range(len(eyesToCalculate.get('h'))):
         eye = eyesToCalculate.get('h')[i_eye]
@@ -150,12 +146,16 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             i = random.randint(0, len(classification) - 1)
             eye.plot_image(eye.get_batches_of_manual()[i], "Random calculated batch #" + str(p))
             eye.plot_image(classification[i, :, :, 0], "Random predicted batch #" + str(p))
+            bin_image = eye.convert_to_binary_image(classification[i, :, :, 0])
+            eye.plot_image(bin_image, "Random predicted binary batch #" + str(p))
 
         batches_of_manual = eye.get_batches_of_manual()
         eye.build_image_from_batches(np.array(batches_of_manual))
         eye.plot_calculated(extraStr=str(i_eye + 1) + " manual")
         eye.build_image_from_batches(classification.reshape(classification.shape[:-1]))
         eye.plot_calculated(extraStr=str(i_eye + 1) + " calculated")
+        eye.plot_calculated(extraStr=str(i_eye + 1) + " calculated", binary=True)
+
         print("Difference between manual and predicted:\t\t"
               + "{:.2f}".format(eye.compare() * 100) + "%")
 

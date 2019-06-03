@@ -119,14 +119,21 @@ class Eye:
             difference = 0.0
         return difference
 
+    def convert_to_binary_image(self, image):
+        mean = (np.max(image) + np.min(image)) / 2.0
+        return image > mean
+
     def plot_raw(self, extraStr=''):
         self.plot_image(self.get_raw(), 'Raw ' + str(extraStr))
 
     def plot_manual(self, extraStr=''):
         self.plot_image(self.get_manual(), "Manual " + str(extraStr))
 
-    def plot_calculated(self, extraStr=''):
-        self.plot_image(self.get_calculated(), "Calculated " + str(extraStr))
+    def plot_calculated(self, extraStr='', binary=False):
+        image = self.get_calculated()
+        if binary:
+            image = self.convert_to_binary_image(image)
+        self.plot_image(image, "Calculated " + str(extraStr))
 
     @staticmethod
     def plot_image(image, title=''):
