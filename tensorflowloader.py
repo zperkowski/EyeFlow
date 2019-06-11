@@ -108,7 +108,7 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             eye.plot_manual(extraStr=str(i_eye + 1) + " traning")
             # Loop over all patches
             cost_value = session.run(cost, feed_dict={x: batches_xs, y: batches_ys})
-            avg_cost += cost_value
+            avg_cost += 0.
             batches_xs = eye.get_batches_of_raw()
             batches_xs = normalize(np.array(batches_xs).reshape(1, -1), norm='max').reshape(len(batches_xs), x_patch_size, x_patch_size, 3)
             batches_ys = eye.get_batches_of_manual()
@@ -147,14 +147,18 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             eye.plot_image(eye.get_batches_of_manual()[i], "Random calculated batch #" + str(p))
             eye.plot_image(classification[i, :, :, 0], "Random predicted batch #" + str(p))
             bin_image = eye.convert_to_binary_image(classification[i, :, :, 0])
-            eye.plot_image(bin_image, "Random predicted binary batch #" + str(p))
+            eye.plot_image(bin_image, "Random predicted binary batch #" + str(p) + " mean")
+            for threshold in range(9):
+                threshold = threshold / 10.0
+                bin_image = eye.convert_to_binary_image(classification[i, :, :, 0], threshold, False)
+                eye.plot_image(bin_image, "Random predicted binary batch #" + str(p) + " threshold " + str(threshold))
 
-        batches_of_manual = eye.get_batches_of_manual()
-        eye.build_image_from_batches(np.array(batches_of_manual))
-        eye.plot_calculated(extraStr=str(i_eye + 1) + " manual")
-        eye.build_image_from_batches(classification.reshape(classification.shape[:-1]))
-        eye.plot_calculated(extraStr=str(i_eye + 1) + " calculated")
-        eye.plot_calculated(extraStr=str(i_eye + 1) + " calculated", binary=True)
+        # batches_of_manual = eye.get_batches_of_manual()
+        # eye.build_image_from_batches(np.array(batches_of_manual))
+        # eye.plot_calculated(extraStr=str(i_eye + 1) + " manual")
+        # eye.build_image_from_batches(classification.reshape(classification.shape[:-1]))
+        # eye.plot_calculated(extraStr=str(i_eye + 1) + " calculated")
+        # eye.plot_calculated(extraStr=str(i_eye + 1) + " calculated", binary=True)
 
         print("Difference between manual and predicted:\t\t"
               + "{:.2f}".format(eye.compare() * 100) + "%")

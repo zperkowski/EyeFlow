@@ -91,6 +91,7 @@ class Eye:
         self.__calculated_batches = self._generate_batches(self.__calculated, self.y_patch_size, self.side_shift)
 
     def build_image_from_batches(self, batches):
+        # Todo: Fix according to smaller batch size
         picture = self.get_calculated()
         next_batch = 0
         for y in range(0, picture.shape[0] - self.x_patch_size + 1, self.x_patch_size):
@@ -119,9 +120,17 @@ class Eye:
             difference = 0.0
         return difference
 
-    def convert_to_binary_image(self, image):
-        mean = (np.max(image) + np.min(image)) / 2.0
-        return image > mean
+    def convert_to_binary_image(self, image, threshold=None, positive=False):
+        if threshold is None:
+            mean = (np.max(image) + np.min(image)) / 2.0
+        else:
+            mean = threshold
+
+        if positive:
+            binary_image = image > mean
+        else:
+            binary_image = image < mean
+        return binary_image
 
     def plot_raw(self, extraStr=''):
         self.plot_image(self.get_raw(), 'Raw ' + str(extraStr))
