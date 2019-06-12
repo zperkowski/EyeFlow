@@ -101,26 +101,24 @@ class Eye:
                 next_batch += 1
         return picture
 
-    def compare(self):
-        w = self.get_calculated().shape[0]
-        h = self.get_calculated().shape[1]
-        total_pixels = 0
-        difference = 0.0
+    @staticmethod
+    def compare(correct, predicted):
+        # True Positive (TP): we predict a label of 1 (positive), and the true label is 1.
+        TP = np.sum(np.logical_and(predicted == 1, correct == 1))
 
-        for x in range(w):
-            for y in range(h):
-                if self.get_mask()[x][y][0] == self.get_mask()[x][y][1] == self.get_mask()[x][y][2] == 255:
-                    if self.get_manual()[x][y] != self.get_calculated()[x][y]:
-                        total_pixels += 1
-                        difference += abs((self.get_manual()[x][y] / 255) - (self.get_calculated()[x][y] / 255))
+        # True Negative (TN): we predict a label of 0 (negative), and the true label is 0.
+        TN = np.sum(np.logical_and(predicted == 0, correct == 0))
 
-        if total_pixels > 0:
-            difference /= total_pixels
-        else:
-            difference = 0.0
-        return difference
+        # False Positive (FP): we predict a label of 1 (positive), but the true label is 0.
+        FP = np.sum(np.logical_and(predicted == 1, correct == 0))
 
-    def convert_to_binary_image(self, image, threshold=None, positive=False):
+        # False Negative (FN): we predict a label of 0 (negative), but the true label is 1.
+        FN = np.sum(np.logical_and(predicted == 0, correct == 1))
+
+        print('TP: %i, FP: %i, TN: %i, FN: %i' % (TP, FP, TN, FN))
+        return TP, TN, FP, FN
+
+    def convert_to_binary_image(self, image, threshold=None, positive=True):
         if threshold is None:
             mean = (np.max(image) + np.min(image)) / 2.0
         else:

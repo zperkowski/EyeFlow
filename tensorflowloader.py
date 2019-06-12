@@ -138,6 +138,7 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
         feed_dict = {x: eye.get_batches_of_raw()}
         # Gets only the middle point
         classification = session.run(y_pred, feed_dict=feed_dict)
+        classification = normalize(np.array(classification).reshape(1, -1), norm='max').reshape(len(batches_ys), y_patch_size, y_patch_size, 1)
         print('\r' + "Calculated " + str(i_eye + 1)
               + " eye:\t\t\t\t\t\t\t100.00%", flush=True)
         print("Building an image based on predictions...")
@@ -146,12 +147,18 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
             i = random.randint(0, len(classification) - 1)
             eye.plot_image(eye.get_batches_of_manual()[i], "Random calculated batch #" + str(p))
             eye.plot_image(classification[i, :, :, 0], "Random predicted batch #" + str(p))
-            bin_image = eye.convert_to_binary_image(classification[i, :, :, 0])
-            eye.plot_image(bin_image, "Random predicted binary batch #" + str(p) + " mean")
+            bin_image = eye.convert_to_binary_image(classification[i, :, :])
+            text = "Random predicted binary batch #" + str(p) + " mean"
+            eye.plot_image(bin_image, text)
+            print(text)
+            eye.compare(eye.get_batches_of_manual()[i], bin_image)
             for threshold in range(9):
                 threshold = threshold / 10.0
-                bin_image = eye.convert_to_binary_image(classification[i, :, :, 0], threshold, False)
-                eye.plot_image(bin_image, "Random predicted binary batch #" + str(p) + " threshold " + str(threshold))
+                bin_image = eye.convert_to_binary_image(classification[i, :, :], threshold, True)
+                text = "Random predicted binary batch #" + str(p) + " threshold " + str(threshold)
+                eye.plot_image(bin_image, text)
+                print(text)
+                eye.compare(eye.get_batches_of_manual()[i], bin_image)
 
         # batches_of_manual = eye.get_batches_of_manual()
         # eye.build_image_from_batches(np.array(batches_of_manual))
@@ -159,9 +166,6 @@ def runTensorFlow(eyesToTrain, eyesToCalculate, batch_size, learning_rate, train
         # eye.build_image_from_batches(classification.reshape(classification.shape[:-1]))
         # eye.plot_calculated(extraStr=str(i_eye + 1) + " calculated")
         # eye.plot_calculated(extraStr=str(i_eye + 1) + " calculated", binary=True)
-
-        print("Difference between manual and predicted:\t\t"
-              + "{:.2f}".format(eye.compare() * 100) + "%")
 
         if verbose:
             path = os.path.join(tempfile.gettempdir(), "tensorflowlogs")
