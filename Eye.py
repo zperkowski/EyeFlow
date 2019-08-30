@@ -103,6 +103,7 @@ class Eye:
 
     @staticmethod
     def compare(correct, predicted):
+        correct = np.round(correct/255, decimals=1)
         # True Positive (TP): we predict a label of 1 (positive), and the true label is 1.
         TP = np.sum(np.logical_and(predicted == 1, correct == 1))
 
