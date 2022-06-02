@@ -7,7 +7,7 @@ opencv-python
 decorator==4.1.2
 Django
 gast==0.2.0
-html5lib==0.9999999
+html5lib==0.99999999
 imageio==2.3.0
 Markdown==2.6.11
 matplotlib
